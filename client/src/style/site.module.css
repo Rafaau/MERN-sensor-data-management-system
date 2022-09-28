@@ -1,0 +1,777 @@
+::-webkit-scrollbar {
+    display: none;
+}
+
+.TableInput {
+    width: 100%; 
+    border: none;
+    border-bottom: solid 1px rgb(212, 212, 212);
+}
+.TableInput:focus,
+.TableInput:active,
+.TableInput:hover  {
+    background-color: white;
+    border: none;
+    outline: none;
+}
+
+
+
+*:focus {
+    outline: none;
+}
+
+.LabelInput {
+    width: 100%;
+    font-weight: bold;
+    position: relative;
+    border: none;
+    background-color: white;
+    color: #5b5b5b;
+    border-bottom: solid 1px rgb(212, 212, 212);
+    text-align: center;
+}
+.LabelInput:focus,
+.LabelInput:active,
+.LabelInput:hover  {
+    background-color: white;
+    border: none;
+    outline: none;
+}
+
+.MobileLabelInput {
+    width: 100%;
+    font-weight: bold;
+    position: relative;
+    border: none;
+    background-color: white;
+    color: #5b5b5b;
+    border-bottom: solid 1px rgb(212, 212, 212);
+    text-align: center;
+}
+.MobileLabelInput:focus,
+.MobileLabelInput:active,
+.MobileLabelInput:hover  {
+    background-color: white;
+    border: none;
+    outline: none;
+}
+
+.TableCell {
+    padding-inline: 1px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.TypeLabel {
+    width: 100px;
+    margin-bottom: 5%;
+}
+
+.Row {
+    margin-bottom: 5px;
+}
+
+.ReadingTable {
+    width: 100%;
+    border: solid 1px rgb(212, 212, 212);
+    border-bottom: none;
+    margin-bottom: 6%;
+    text-align: left;
+}
+
+.InputTable {
+    width: 103%;
+    border-bottom: none;
+}
+
+.ReadingBody {
+    border-bottom: none;
+    width: 100%;
+}
+
+.ReadingHead {
+    padding-inline: 1%;
+    background-color: white;
+    color: #5b5b5b;
+    padding-left: 5px;
+    text-align: left;
+}
+
+.DownloadSpan {
+    font-size: 10px;
+    padding-left: 5px;
+}
+
+.ButtonWrapper {
+    display: flex;
+}
+
+.TableFooter {
+    padding: 5px;
+    width: 100%;
+    display: flex;
+    height: 50px;
+    border-top: 0;
+    margin-bottom: 6%;
+}
+
+.SendButtonCell {
+    width: 100%;
+}
+
+.ListTable {
+    width: 100%;
+    font-family: Trebuchet MS, sans-serif;
+    color: #7e7e7e;
+}
+
+.ListHeader {
+    color: #7e7e7e;
+    padding-left: 2vw;
+    font-family: Trebuchet MS, sans-serif;
+    font-size: 1vw;
+    font-weight: lighter;
+    padding-bottom: 2vh;
+    padding-top: 2vh;
+    border-bottom: solid 1px rgb(228, 228, 228);
+}
+
+.ListCell {
+
+    font-size: 1.25vw;
+    width: 50%;
+    padding-right: 2vw;
+}
+
+.ListTr {
+    border-bottom: solid 1px rgb(228, 228, 228);
+    transition: 0.05s;
+    height: 10vh;
+}
+
+.ListTr:hover {
+    border-top: solid 2px white;
+    border-bottom: solid 2px white;
+    -webkit-box-shadow: 0px 0px 9px -2px rgba(66, 68, 90, 1);
+    -moz-box-shadow: 0px 0px 9px -2px rgba(66, 68, 90, 1);
+    box-shadow: 0px 0px 9px -2px rgba(66, 68, 90, 1);
+}
+
+.MobileListTable {
+    width: 100%;
+    font-family: Trebuchet MS, sans-serif;
+    color: #7e7e7e;
+}
+
+.MobileListHeader {
+    color: #7e7e7e;
+    padding-left: 2vw;
+    font-family: Trebuchet MS, sans-serif;
+    font-size: 2vw;
+    font-weight: lighter;
+    padding-bottom: 1vh;
+    padding-top: 2vh;
+    border-bottom: solid 1px rgb(228, 228, 228);
+}
+
+.MobileListCell {
+
+    font-size: 2.5vw;
+    width: 50%;
+    padding-right: 2vw;
+}
+
+.MobileListTr {
+    border-bottom: solid 1px rgb(228, 228, 228);
+    transition: 0.05s;
+    height: 5vh;
+}
+
+.MobileListTr:hover {
+    border-top: solid 2px white;
+    border-bottom: solid 2px white;
+    -webkit-box-shadow: 0px 0px 9px -2px rgba(66, 68, 90, 1);
+    -moz-box-shadow: 0px 0px 9px -2px rgba(66, 68, 90, 1);
+    box-shadow: 0px 0px 9px -2px rgba(66, 68, 90, 1);
+}
+
+
+.ModalBackdrop {
+    background-color: rgba(0,0,0, 0.3);
+    opacity: 50%;
+}
+
+.CancelButton {
+    border: none;
+    border-radius: 5px;
+    padding: 5px;
+    padding-inline: 10px;
+    color: white;
+    background-color: #a3a3a3;
+    transition: 0.2s;
+}
+
+.CancelButton:hover {
+    background-color: #858585;
+}
+
+.DeleteButton {
+    border: none;
+    border-radius: 5px;
+    padding: 5px;
+    padding-inline: 10px;
+    color: white;
+    background-color: #ff5900;
+    transition: 0.2s;    
+}
+
+.DeleteButton:hover {
+    background-color: #ce4800;
+}
+
+.Tooltip {
+    z-index: 1000;
+}
+
+.Chooser {
+    background-color: red;
+}
+
+.PreviewChart {
+    width: 70%;
+    position: absolute;
+    top: 5vh;
+    right: 0;
+}
+
+.PreviewJsonChart {
+    width: 70%;
+    position: absolute;
+    top: -15vh;
+    right: 0;
+}
+
+.AuthDiv {
+    height: 60vh;
+    padding: 0;
+}
+
+.AuthChart {
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    position: absolute;
+}
+
+.AuthChartOutsider {
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    position: absolute;
+}
+
+.Grid {
+    margin-top: 1%;
+    width: 60%;
+    height: 95%;
+    position: absolute;
+    z-index: 99;
+}
+
+.WallpaperGrid {
+    margin-top: 1%;
+    width: 20%;
+    height: 300%;
+    position: absolute;
+    bottom: -24vh;
+    left: -2vw;
+    z-index: 1;
+}
+
+.GridRow {
+    border-bottom: 1px solid #A3A3A3;
+    padding: 2vh;
+    z-index: 99;
+}
+
+.GridCell {
+    border-right: 1px solid #A3A3A3;
+}
+
+.GridCellMotion {
+    border-right: 1px solid #A3A3A3;
+    position: relative;
+}
+
+.YAxis {
+    position: absolute;
+    left: -5%;
+    margin-top: 1%;
+    color: #A3A3A3;
+    font-size: 2vh;
+}
+
+.XAxis {
+    position: absolute;
+    color: #A3A3A3;
+    font-size: 2vh;
+    bottom: -4%;
+}
+
+.Typical {
+    width: 7vw;
+    padding-left: 0.5vw;
+    position: relative;
+    color: #7E7E7E;
+    font-family: Trebuchet MS, sans-serif;
+    font-weight: bold;
+    font-size: 1.2vw;
+    margin-bottom: 0;
+}
+
+.MotionResizeDiv {
+    position: relative;
+    border: 1px solid red;
+}
+
+.MotionResize {
+    position: absolute;
+    bottom: -2vh;
+    left: -1vw;
+}
+
+.TypicalWarn {
+    position: absolute;
+    color: #494949;
+    font-family: Trebuchet MS, sans-serif;
+    font-weight: bold;
+    font-size: 2vw;
+    top: 60%;
+    left: 30%;
+}
+
+.TapeOne {
+    position: absolute;
+    z-index: 1002;
+    transform: scale(0.8)
+}
+
+.SideTypical1 {
+    position: absolute;
+    color: #7E7E7E;
+    font-family: Trebuchet MS, sans-serif;
+    font-weight: bold;
+    font-size: 1vw;
+    top: 150%;
+}
+
+.SideTypical2 {
+    position: absolute;
+    color: #7E7E7E;
+    font-family: Trebuchet MS, sans-serif;
+    font-weight: bold;
+    font-size: 1.3vw;
+    top: 120%;
+    right: 0;
+}
+
+.SideTypical3 {
+    position: absolute;
+    color: #a8a8a8;
+    font-family: Trebuchet MS, sans-serif;
+    font-weight: bold;
+    font-size: 1.8vw;
+    top: 220%;
+    right: 20%;
+}
+
+.WarnBlizzard1 {
+    position: absolute;
+    color: #919191;
+    font-family: Trebuchet MS, sans-serif;
+    font-weight: bold;
+    font-size: 1.2vw;
+    bottom: 20%;
+    left: 20%;
+}
+
+.WarnBlizzard2 {
+    position: absolute;
+    color: #727272;
+    font-family: Trebuchet MS, sans-serif;
+    font-weight: bold;
+    font-size: 2.2vw;
+    left: 20%;
+}
+
+.WarnBlizzard3 {
+    position: absolute;
+    color: #a1a1a1;
+    font-family: Trebuchet MS, sans-serif;
+    font-weight: bold;
+    font-size: 1.5vw;
+    top: 40%;
+
+}
+
+.WarnBlizzard4 {
+    position: absolute;
+    color: #686868;
+    font-family: Trebuchet MS, sans-serif;
+    font-weight: bold;
+    font-size: 1.4vw;
+    top: 10%;
+    right: 15%;
+}
+
+.WarnBlizzard5 {
+    position: absolute;
+    color: #969696;
+    font-family: Trebuchet MS, sans-serif;
+    font-weight: bold;
+    font-size: 1.3vw; 
+    bottom: 25%;
+    right: 0;
+}
+
+.WarnBlizzard6 {
+    position: absolute;
+    color: #979797;
+    font-family: Trebuchet MS, sans-serif;
+    font-weight: bold;
+    font-size: 2.4vw;
+    bottom: 60%;
+    right: 20%;
+}
+
+.WarnBlizzard7 {
+    position: absolute;
+    color: #7E7E7E;
+    font-family: Trebuchet MS, sans-serif;
+    font-weight: bold;
+    font-size: 1.8vw; 
+    bottom: 5%;
+    right: 35%;
+}
+
+.WarnBlizzard8 {
+    position: absolute;
+    color: #6e6e6e;
+    font-family: Trebuchet MS, sans-serif;
+    font-weight: bold;
+    font-size: 0.9vw;
+    bottom: 5%;
+}
+
+.WarnBlizzard9 {
+    position: absolute;
+    color: #919191;
+    font-family: Trebuchet MS, sans-serif;
+    font-weight: bold;
+    font-size: 1.8vw; 
+    right: 0;
+}
+
+.WarnBlizzard10 {
+    position: absolute;
+    color: #909090;
+    font-family: Trebuchet MS, sans-serif;
+    font-weight: bold;
+    font-size: 1.8vw;
+    top: -5%;
+    right: 30%;
+}
+
+.Underline {
+    display: block;
+    position: absolute;
+    border-bottom: 5px solid #ff5900;
+    width: auto;
+    left: 35%;
+    right: 35%;
+    bottom: 0;
+}
+
+.MobileUnderline {
+    display: block;
+    position: absolute;
+    border-bottom: 3px solid #ff5900;
+    width: auto;
+    left: 25%;
+    right: 25%;
+    bottom: 0;
+}
+
+
+.FlexFix {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+}
+
+.GrayLogo {
+    position: absolute;
+    top: 15%;
+    width: 8.5vw;
+    left: 30%;
+    filter: invert(29%) sepia(5%) saturate(25%) hue-rotate(349deg) brightness(90%) contrast(81%);
+}
+
+.DisabledLogo {
+    position: absolute;
+    top: 15%;
+    width: 8.5vw;
+    left: 30%;
+    filter: invert(87%) sepia(12%) saturate(5%) hue-rotate(320deg) brightness(86%) contrast(92%);
+}
+
+.OrangeLogo {
+    position: absolute;
+    top: 15%;
+    width: 8.5vw;
+    left: 30%;
+    filter: invert(56%) sepia(72%) saturate(6377%) hue-rotate(3deg) brightness(104%) contrast(104%);  
+}
+
+.MobileGrayLogo {
+    position: absolute;
+    top: 15%;
+    width: 20.5vw;
+    left: 2%;
+    filter: invert(29%) sepia(5%) saturate(25%) hue-rotate(349deg) brightness(90%) contrast(81%);
+}
+
+.MobileDisabledLogo {
+    position: absolute;
+    top: 15%;
+    width: 20.5vw;
+    left: 2%;
+    filter: invert(87%) sepia(12%) saturate(5%) hue-rotate(320deg) brightness(86%) contrast(92%);
+}
+
+.MobileOrangeLogo {
+    position: absolute;
+    top: 15%;
+    width: 20.5vw;
+    left: 2%;
+    filter: invert(56%) sepia(72%) saturate(6377%) hue-rotate(3deg) brightness(104%) contrast(104%);  
+}
+
+.WaveOne {
+    position: absolute;
+    top: -4vh;
+    left: 9.7%;
+}
+
+.WaveTwo {
+    position: absolute;
+    top: -10vh;
+    left: 9.2%;
+}
+
+.WaveThree {
+    position: absolute;
+    top: -14vh;
+    left: 8.6%;
+}
+
+.WireOne {
+    position: absolute;
+    top: -40vh;
+    left: 1.2vw;
+}
+
+.FirstWire {
+    position: absolute;
+    top: -14vh;
+    left: 8.8%;
+}
+
+.ChartOne {
+    position: absolute;
+    top: -16vh;
+    left: -2.8%;
+    z-index: 2;
+}
+
+.ChartTwo {
+    position: absolute;
+    top: -16vh;
+    left: -2.8%;
+    z-index: 2;
+}
+
+.ChartThree {
+    position: absolute;
+    top: -16vh;
+    left: -2.8%;
+    z-index: 2;
+}
+
+.SecondWire {
+    position: absolute;
+    top: -30vh;
+    left: 15.8%;
+}
+
+.WireTwo {
+    position: absolute;
+    top: 40vh;
+    left: -2vw;
+}
+
+.WireThree {
+    position: absolute;
+    bottom: 1vh;
+    left: 5vw;
+    z-index: 100;
+}
+
+.HomeTable {
+    border: 1px solid;
+}
+
+.HomeTd {
+    border: 1px solid;
+}
+
+.WallTh {
+    max-width: 25%;
+    width: 8vw;
+    font-size: 1vw;
+}
+
+.WallThFix {
+    max-width: 25%;
+    width: 8vw;
+    font-size: 1vw;
+    padding-left: 1vw;
+}
+
+.WallFirstTh {
+    max-width: 25%;
+    width: 8vw;
+    font-size: 1vw;
+    padding-left: 1vw;
+}
+
+
+.WallTr {
+    width: 100%;
+    display: flex;
+    color: #4F4F4F;
+    border-bottom: 1px solid;
+    -webkit-box-shadow: 0px 0px 9px -3px rgba(66, 68, 90, 1);
+    -moz-box-shadow: 0px 0px 9px -3px rgba(66, 68, 90, 1);
+    box-shadow: 0px 0px 9px -3px rgba(66, 68, 90, 1);
+}
+
+.TdFix {
+    padding-left: 2.5vw;
+}
+
+.FramerFix {
+    position: relative;
+    top: 0;
+}
+
+.FramerDivFix {
+    position: absolute;
+    top: 0;
+}
+
+.WallpaperBackground {
+    background-color: #E3E3E3;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
+
+.HomeHeader {
+    top: 5%;
+    position: relative;
+}
+
+.HomeDescription {
+    right: 11%;
+    top: 20%;
+    position: relative;
+}
+
+.FacebookButton {
+    color: #ff5900;
+    width: 10%;
+    position: absolute;
+    left: 50%;
+    content: none;
+    height: auto;
+    width: auto;
+    border: 3px solid;
+    border-radius: 50%;
+    font-size: 1.9vw;
+    padding-inline: 0.9vw;
+    margin-left: 1vw;
+    background-color: white;
+    transition: 0.2s;
+}
+
+.MobileFacebookButton {
+    color: #ff5900;
+    width: 10%;
+    position: absolute;
+    left: 50%;
+    content: none;
+    height: auto;
+    width: auto;
+    border: 3px solid;
+    border-radius: 50%;
+    font-size: 9vw;
+    padding-inline: 4.4vw;
+    margin-left: 1vw;
+    background-color: white;
+    transition: 0.2s;
+}
+
+.FacebookButton:hover {
+    transform: scale(1.1)
+}
+
+.MobileFacebookButton:hover {
+    transform: scale(1.1)
+}
+
+.JsonValid {
+    position: absolute;
+    left: 2vw;
+}
+
+.ChooseOptionDiv {
+    width: 25%;
+    margin: 0;
+}
+
+.MobileChooseOptionDiv {
+    width: 50%;
+    margin: 0;
+}
+
+.DetailsPadding {
+    margin-bottom: 15vh;
+}
+
+.AccountDetails:after {
+    content: '';
+	position: absolute;
+	top: 0;
+	left: 50%;
+	width: 0;
+	height: 0;
+	border: 20px solid transparent;
+	border-bottom-color: white;
+	border-top: 0;
+	border-left: 0;
+	margin-left: -10px;
+	margin-top: -20px;   
+}

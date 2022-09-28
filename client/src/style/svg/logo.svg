@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg8"
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"
+   sodipodi:docname="logo.svg">
+  <defs
+     id="defs2">
+    <rect
+       x="131.91369"
+       y="174.43601"
+       width="27.970238"
+       height="37.986607"
+       id="rect892" />
+    <rect
+       x="135.50446"
+       y="170.46726"
+       width="55.5625"
+       height="32.316964"
+       id="rect886" />
+    <rect
+       x="67.657738"
+       y="108.47917"
+       width="130.40178"
+       height="83.154762"
+       id="rect867" />
+    <rect
+       x="74.083333"
+       y="110.93601"
+       width="69.358631"
+       height="30.427083"
+       id="rect861" />
+    <rect
+       x="75.40625"
+       y="119.25149"
+       width="40.443452"
+       height="16.441964"
+       id="rect855" />
+    <rect
+       x="71.248512"
+       y="120.19643"
+       width="52.727679"
+       height="11.339286"
+       id="rect849" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.7"
+     inkscape:cx="152.51681"
+     inkscape:cy="519.13207"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1001"
+     inkscape:window-x="1699"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Warstwa 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <text
+       xml:space="preserve"
+       id="text847"
+       style="line-height:1.25;font-family:sans-serif;font-size:1.41111111px;white-space:pre;shape-inside:url(#rect849);" />
+    <text
+       xml:space="preserve"
+       id="text853"
+       style="line-height:1.25;font-family:'Trebuchet MS';font-size:14.11111111px;white-space:pre;shape-inside:url(#rect855);stroke-width:4.7;stroke-miterlimit:4;stroke-dasharray:none;-inkscape-font-specification:'Trebuchet MS';font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;" />
+    <text
+       xml:space="preserve"
+       id="text859"
+       style="line-height:1.25;font-family:'Trebuchet MS';font-size:19.75555556px;white-space:pre;shape-inside:url(#rect861);-inkscape-font-specification:'Trebuchet MS';font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;" />
+    <text
+       xml:space="preserve"
+       id="text865"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:19.7556px;line-height:0;font-family:'Trebuchet MS';-inkscape-font-specification:'Trebuchet MS';white-space:pre;shape-inside:url(#rect867);"
+       transform="matrix(0.80516669,0,0,0.80516669,36.894022,23.194722)"><tspan
+         x="67.658203"
+         y="123.24352"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:19.7556px;line-height:0.93;font-family:'Trebuchet MS';-inkscape-font-specification:'Trebuchet MS'">sensor data
+</tspan></tspan><tspan
+         x="67.658203"
+         y="141.61623"><tspan
+           style="font-size:17.6389px;line-height:0.93">management</tspan><tspan
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:19.7556px;line-height:0.93;font-family:'Trebuchet MS';-inkscape-font-specification:'Trebuchet MS'">
+</tspan></tspan><tspan
+         x="67.658203"
+         y="170.27167"><tspan
+           style="font-size:33.5139px">system</tspan></tspan></text>
+    <text
+       xml:space="preserve"
+       id="text884"
+       style="line-height:1.25;font-family:sans-serif;font-size:1.41111111px;white-space:pre;shape-inside:url(#rect886);" />
+    <text
+       xml:space="preserve"
+       id="text890"
+       style="line-height:1.25;font-family:sans-serif;font-size:1.41111111px;white-space:pre;shape-inside:url(#rect892);" />
+    <path
+       style="fill:#000000;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 86.24944,131.37035 h -8.669827 l -3.09468,11.1503 -6.094868,-33.61626 -8.988745,28.46633 -2.126117,-5.88225 h -9.260417 c 0,0 -0.291176,6.29447 0,6.37249 0.291179,0.078 4.821058,0 4.821058,0 l 7.132756,18.95943 6.731852,-21.29804 6.381059,34.89538 9.321025,-32.50666 h 3.80859 z"
+       id="path912" />
+    <circle
+       style="opacity:1;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:4.90492;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+       id="path914"
+       cx="42.545971"
+       cy="134.65372"
+       r="6.3977642" />
+    <path
+       style="fill:#000000;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 35.04548,126.62202 -3.567152,-5.26804 c 0,0 -7.758158,4.12906 -7.758158,13.31645 0,9.18739 7.6991,13.30725 7.6991,13.30725 l 3.578964,-5.26805 c 0,0 -4.830186,-2.22609 -4.830186,-8.07261 0,-5.84652 4.877432,-8.015 4.877432,-8.015 z"
+       id="path916" />
+    <path
+       style="fill:#000000;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 24.875558,110.34542 c 0,0 -13.678013,7.67764 -13.678013,24.2141 0,16.53646 13.658521,24.38232 13.658521,24.38232 l 3.57473,-5.3955 c 0,0 -10.891233,-5.71288 -10.891233,-18.8425 0,-13.12961 10.916289,-18.97614 10.916289,-18.97614 z"
+       id="path929" />
+  </g>
+</svg>
