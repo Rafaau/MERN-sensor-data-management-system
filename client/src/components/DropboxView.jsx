@@ -192,6 +192,8 @@ const DropboxView = (callback) => {
     }
 
     const handleSendClick = async () => {
+        setLoading(true)
+        setShowButtons(false)
         joinSensorValues()
         let sensorlabels = sensorLabels[0]+","+sensorLabels[1]+","+sensorLabels[2]
         sensorlabels = sensorlabels.replace("undefined", "")
@@ -217,6 +219,8 @@ const DropboxView = (callback) => {
                 successes++;
             }
         }
+
+        setLoading(false)
 
         if (successes == rowsCount) {
             openSuccessSnackbar("Reading created successfully!")

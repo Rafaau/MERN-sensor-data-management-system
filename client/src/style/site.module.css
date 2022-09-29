@@ -585,8 +585,9 @@
 
 .FirstWire {
     position: absolute;
-    top: -14vh;
+    top: -11vh;
     left: 8.8%;
+    width: 150vw;
 }
 
 .ChartOne {
@@ -612,8 +613,9 @@
 
 .SecondWire {
     position: absolute;
-    top: -30vh;
+    top: -26vh;
     left: 15.8%;
+    width: 140vw;
 }
 
 .WireTwo {
@@ -711,7 +713,7 @@
     border: 3px solid;
     border-radius: 50%;
     font-size: 1.9vw;
-    padding-inline: 0.9vw;
+    padding-inline: 2.1vh;
     margin-left: 1vw;
     background-color: white;
     transition: 0.2s;

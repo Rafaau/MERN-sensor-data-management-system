@@ -33,42 +33,67 @@ const ChooseView = (callback) => {
     const [showFile, setShowFile] = useState(false)
     const [showDropbox, setShowDropbox] = useState(false)
     const [showJson, setShowJson] = useState(false)
+    const [isBlocked, setIsBlocked] = useState(false)
+    const [showCapMessage, setShowCapMessage] = useState(false)
     const [width, setWidth] = useState(window.innerWidth)
     const breakpoint = 620;
 
     useEffect(() => {
+        setupBlock()
         const handleWindowResize = () => setWidth(window.innerWidth)
         window.addEventListener("resize", handleWindowResize)
     
         return () => window.removeEventListener("resize", handleWindowResize)
     }, [])
 
+    const setupBlock = async () => {
+        const isTrueSet = (localStorage.getItem("isBlocked") === "true")
+        console.log(isTrueSet)
+        setIsBlocked(isTrueSet)
+    }
+
     const handleInsertClick = async () => {
-        setShowTitle(false)
-        setShowViews(false)
-        await new Promise(r => setTimeout(r, 1250))
-        callback.onInsert()
+        if (isBlocked)
+            setShowCapMessage(true)
+        else {
+            setShowTitle(false)
+            setShowViews(false)
+            await new Promise(r => setTimeout(r, 1250))
+            callback.onInsert()
+        }
     }
 
     const handleFileClick = async () => {
-        setShowTitle(false)
-        setShowViews(false)
-        await new Promise(r => setTimeout(r, 1250))
-        callback.onFile()
+        if (isBlocked)
+            setShowCapMessage(true)
+        else {
+            setShowTitle(false)
+            setShowViews(false)
+            await new Promise(r => setTimeout(r, 1250))
+            callback.onFile()
+        }
     }
 
     const handleDropboxClick = async () => {
-        setShowTitle(false)
-        setShowViews(false)
-        await new Promise(r => setTimeout(r, 1250))
-        callback.onDropbox()
+        if (isBlocked)
+            setShowCapMessage(true)
+        else {
+            setShowTitle(false)
+            setShowViews(false)
+            await new Promise(r => setTimeout(r, 1250))
+            callback.onDropbox()
+        }
     }
 
     const handleJsonClick = async () => {
-        setShowTitle(false)
-        setShowViews(false)
-        await new Promise(r => setTimeout(r, 1250))
-        callback.onJson()
+        if (isBlocked)
+            setShowCapMessage(true)
+        else {
+            setShowTitle(false)
+            setShowViews(false)
+            await new Promise(r => setTimeout(r, 1250))
+            callback.onJson()
+        }
     }
 
     return (
@@ -137,7 +162,14 @@ const ChooseView = (callback) => {
                     animate = {{ opacity: showInsert && showViews ? 1 : 0 }}
                     transition = {{ duration: 0.4 }}>
                     <ChooseDescription>
-                        Insert sensor data into a responsive table by yourself and save it to database. 
+                        { !showCapMessage ?
+                            <p>Insert sensor data into a responsive table by yourself and save it to database.</p>
+                        : 
+                            <p style={{"color": "#CB0000"}}>
+                                You have exceeded the allowable number of arrays you can send to database.
+                                Remove some readings to free up memory.
+                            </p> 
+                        }
                     </ChooseDescription>
             </motion.div>
             <motion.div
@@ -145,7 +177,14 @@ const ChooseView = (callback) => {
                 animate = {{ opacity: showFile && showViews ? 1 : 0 }}
                 transition = {{ duration: 0.4 }}>
                 <ChooseDescription>
-                    Upload .csv file from your device and preview data in the table. You can edit the data, before sending to database.
+                    { !showCapMessage ?
+                        <p>Upload .csv file from your device and preview data in the table. You can edit the data, before sending to database.</p>
+                    :
+                        <p style={{"color": "#CB0000"}}>
+                            You have exceeded the allowable number of arrays you can send to database.
+                            Remove some readings to free up memory.
+                        </p> 
+                    }
                 </ChooseDescription>
             </motion.div>
             <motion.div
@@ -153,7 +192,14 @@ const ChooseView = (callback) => {
                 animate = {{ opacity: showDropbox && showViews ? 1 : 0 }}
                 transition = {{ duration: 0.4 }}>
                 <ChooseDescription>
-                    Open a Dropbox widget and choose one of the shared files. You can edit the data, before sending to database.
+                    { !showCapMessage ?
+                        <p>Open a Dropbox widget and choose one of the shared files. You can edit the data, before sending to database.</p>
+                    :
+                        <p style={{"color": "#CB0000"}}>
+                            You have exceeded the allowable number of arrays you can send to database.
+                            Remove some readings to free up memory.
+                        </p> 
+                    }
                 </ChooseDescription>
             </motion.div>
             <motion.div
@@ -161,7 +207,14 @@ const ChooseView = (callback) => {
                 animate = {{ opacity: showJson && showViews ? 1 : 0 }}
                 transition = {{ duration: 0.4 }}>
                 <ChooseDescription>
-                    Insert JSON code block to textarea, preview data and edit before sending.
+                    { !showCapMessage ?
+                        <p>Insert JSON code block to textarea, preview data and edit before sending.</p>
+                    :
+                        <p style={{"color": "#CB0000"}}>
+                            You have exceeded the allowable number of arrays you can send to database.
+                            Remove some readings to free up memory.
+                        </p> 
+                    }
                 </ChooseDescription>
             </motion.div>
         </ViewsRow>

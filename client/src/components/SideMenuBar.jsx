@@ -31,6 +31,10 @@ function SideMenuBar() {
                 if (response.status == 200) {
                     localStorage.setItem("numberOfArrays", JSON.stringify(response.data.data.length))
                     console.log(JSON.parse(localStorage.getItem("numberOfArrays")))
+                    if (JSON.parse(localStorage.getItem("numberOfArrays")) > 50000)
+                        localStorage.setItem("isBlocked", true)
+                    else
+                        localStorage.setItem("isBlocked", false)
                     setSensorDatas(response.data.data)
                 }
             }

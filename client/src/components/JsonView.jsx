@@ -184,6 +184,8 @@ const JsonView = (callback) => {
     }
 
     const handleSendClick = async () => {
+        setLoading(true)
+        setShowButtons(false)
         console.log("started")
         joinSensorValues()
         let sensorlabels = sensorLabels[0]+","+sensorLabels[1]+","+sensorLabels[2]
@@ -210,6 +212,8 @@ const JsonView = (callback) => {
                 successes++;
             }
         }
+
+        setLoading(false)
 
         if (successes == rowsCount) {
             openSuccessSnackbar("Reading created successfully!")

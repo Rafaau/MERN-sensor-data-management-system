@@ -50,7 +50,7 @@ const AuthGrid = () => {
                                         className={styles.MotionResize}>
                                         <motion.div
                                             initial = {{ opacity: 1 }}
-                                            animate = {{ opacity: 0 }}
+                                            animate = {{ opacity: 0, x: 500 }}
                                             transition = {{ delay: 6, duration: 0.01 }}>
                                             <ResizeIcon/>    
                                         </motion.div>                          

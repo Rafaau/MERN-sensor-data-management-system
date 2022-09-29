@@ -497,7 +497,7 @@ const HomeWallpaper3 = () => {
                             <g transform="scale(1.40,0.85)">
                                 <motion.path
                                     width="200px"
-                                    strokeWidth="0.03vh"
+                                    strokeWidth="0.02vh"
                                     fill="none"
                                     //d="M50 40 L80 40 C80 40 80 80 40 80 C40 80 0 80 0 80 0 40 C0 40 0 0 40 0Z"
                                     d="M 1 6 C 5 6 5 9 16 9 C 25 9 26 14 33 14"
