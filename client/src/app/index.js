@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom"
 import SnackbarProvider from "react-simple-snackbar"
 import api from "../api"
 
-import { SensorDataList, HomeContainer, SensorDataInsert, SensorDataDetails, Auth } from "../pages"
+import { SensorDataList, HomeContainer, SensorDataInsert, SensorDataDetails, SensorDataBundleDetails, Auth, SensorDataCollector, TaskDetails, TaskReadingDetails } from "../pages"
 import { UpperNavBar, SideMenuBar, } from "../components"
 import { MobileUpperNavBar, MobileAuth } from "../mobile-components"
 import { Body, Row, AuthBody } from "../style/styled-components"
@@ -119,7 +119,70 @@ function App() {
                 </MobileBody>
               </> }
               </>
-              } />
+            } />
+            <Route path = "/sensordata/collector" exact element = {
+              <>
+              { width > breakpoint ?
+              <>
+                <UpperNavBar/>
+                <Body>
+                  <Row>
+                    { render ? <SideMenuBar/> : null }
+                    <SensorDataCollector/>
+                  </Row>
+                </Body>
+              </>
+              :
+              <>
+                <MobileUpperNavBar/>
+                <MobileBody>
+                  <SensorDataCollector/>
+                </MobileBody>
+              </> }
+              </>
+            } />
+            <Route path = "/task/:task" exact element = {
+              <>
+              { width > breakpoint ?
+              <>
+                <UpperNavBar/>
+                <Body>
+                  <Row>
+                    { render ? <SideMenuBar/> : null }
+                    <TaskDetails/>
+                  </Row>
+                </Body>
+              </>
+              :
+              <>
+                <MobileUpperNavBar/>
+                <MobileBody>
+                  <TaskDetails/>
+                </MobileBody>
+              </> }
+              </>
+            } />
+            <Route path = "/task/:task/:sensor" exact element = {
+              <>
+              { width > breakpoint ?
+              <>
+                <UpperNavBar/>
+                <Body>
+                  <Row>
+                    { render ? <SideMenuBar/> : null }
+                    <TaskReadingDetails/>
+                  </Row>
+                </Body>
+              </>
+              :
+              <>
+                <MobileUpperNavBar/>
+                <MobileBody>
+                  <TaskReadingDetails/>
+                </MobileBody>
+              </> }
+              </>
+            } />            
             <Route path = "/sensordata/:uuid" exact element = {
               <>
               { width > breakpoint ?
@@ -140,6 +203,27 @@ function App() {
                 </MobileBody>
               </> }
               </>
+            } />
+              <Route path = "/sensordata/bundle/:id" exact element = {
+                <>
+                { width > breakpoint ?
+                <>
+                  <UpperNavBar/>
+                  <Body>
+                    <Row>
+                      { render ? <SideMenuBar/> : null }
+                      <SensorDataBundleDetails onDelete={onDelete}/>
+                    </Row>
+                  </Body>
+                </>
+                :
+                <>
+                  <MobileUpperNavBar/>
+                  <MobileBody>
+                    <SensorDataBundleDetails/>
+                  </MobileBody>
+                </> }
+                </>
               } />
             <Route path = "/auth" exact element = {
               <>

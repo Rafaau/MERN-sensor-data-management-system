@@ -23,10 +23,12 @@ const validApiReq = {
     uuid: "12345",
     userId: "12345",
     name: "Test",
+    bundleId: "1",
     timestamp: "1",
     milliseconds: 101,
     sensorlabels: "x,y,z",
-    sensorvalues: "1,2,3"
+    sensorvalues: "1,2,3",
+    task: "test"
 }
 
 const validReq = {
@@ -34,15 +36,36 @@ const validReq = {
         uuid: "12345",
         userId: "12345",
         name: "Test",
+        bundleId: "1",
         timestamp: "1",
         milliseconds: "101",
         sensorlabels: "x,y,z",
-        sensorvalues: "1,2,3"
+        sensorvalues: "1,2,3",
+        task: "test"
     }
 }
 
+const validStreamReq  = {
+    body: {
+        uuid: "12345",
+        userId: "12345",
+        name: "Test",
+        bundleId: "1",
+        timestamp: "1",
+        milliseconds: "101",
+        task: "test",
+        sensors: [
+            {sensor: {name: "Test", value0: "1.0"}}
+        ]
+    }
+}
+
+
 const mockByUuidRequest = { params: { uuid: "12345" } }
 const mockByUserIdRequest = { params: { userId: "12345" } }
+const mockByBundleIdRequest = { params: { bundleId: "1" } }
+const mockByTaskRequest = { params: { task: "test" } }
+const mockByTaskAndNameRequest = { params: { task: "test", name: "Test" }}
 
 describe("READING CREATE", () => {
 
@@ -60,6 +83,13 @@ describe("READING CREATE", () => {
             .expect(201)
     })
 
+    test("STREAM POST call - Should return status code 400", async () => {
+        await api
+            .post("/api/stream")
+            .send({})
+            .expect(400)
+    })
+
     test("CREATE SERVICE - Should return status code 400", async () => {
         const req = {}
 
@@ -68,7 +98,7 @@ describe("READING CREATE", () => {
         expect(mockStatus).toHaveBeenCalledWith(400)
     })
 
-    test("CREATE SERVICE - Should return json", async () => {
+    test("CREATE SERVICE - Should return error message", async () => {
         await SensorDataController.createReading({}, mockResponse)
 
         expect(mockJson).toHaveBeenCalledWith({ success: false, error: "You must provide a sensor data." })
@@ -84,6 +114,25 @@ describe("READING CREATE", () => {
         await SensorDataController.createReading(validReq, mockResponse)
 
         expect(mockJson).toHaveBeenCalledWith({ success: true, message: "Sensor data created!", id: expect.anything() })
+    })
+
+    test("STREAM SERVICE - Should return status code 400", async () => {
+        await SensorDataController.streamDataToDb({}, mockResponse)
+
+        expect(mockStatus).toHaveBeenCalledWith(400)
+    })
+
+    test("STREAM SERVICE - Should return error message", async () => {
+        await SensorDataController.streamDataToDb({}, mockResponse)
+
+        expect(mockJson).toHaveBeenCalledWith({ success: false, error: "Cannot get post body" })
+    })
+
+    test("STREAM SERVICE - Should not return status", async () => {
+        await SensorDataController.streamDataToDb(validStreamReq, mockResponse)
+
+        // Because service does not return status
+        expect(mockStatus).not.toHaveBeenCalledWith()
     })
 })
 
@@ -136,6 +185,57 @@ describe("READING GET", () => {
 
         await api
             .get(`/api/reading/user/12345`)
+            .expect(200)
+            .expect("Content-type", /application\/json/)
+    })
+
+    test("GET BY BUNDLEID call - Should return status code 404", async () => {
+        await api
+            .get(`/api/reading/bundle/invalid`)
+            .expect(404)
+    })
+
+    test("GET BY BUNDLEID call - should return status code 200 and content", async () => {
+        await api
+            .post("/api/reading")
+            .send(validApiReq)
+        
+        await api
+            .get(`/api/reading/bundle/1`)
+            .expect(200)
+            .expect("Content-type", /application\/json/)
+    })
+
+    test("GET BY TASK call - should return status code 404", async () => {
+        await api
+            .get(`/api/reading/task/invalid`)
+            .expect(404)
+    })
+
+    test("GET BY TASK call - should return status code 200 and content", async () => {
+        await api
+            .post("/api/reading")
+            .send(validApiReq)
+        
+        await api
+            .get(`/api/task/test`)
+            .expect(200)
+            .expect("Content-type", /application\/json/)
+    })
+
+    test("GET BY TASK AND NAME call - should return status code 404", async () => {
+        await api
+            .get(`/api/task/invalid/invalid`)
+            .expect(404)
+    })
+
+    test("GET BY TASK AND NAME call - should return status code 200 and content", async () => {
+        await api
+            .post("/api/reading")
+            .send(validApiReq)
+
+        await api
+            .get(`/api/task/test/Test`)
             .expect(200)
             .expect("Content-type", /application\/json/)
     })
@@ -260,6 +360,125 @@ describe("READING GET", () => {
         expect(mockJson).toHaveBeenCalledWith({ success: true, data: expect.anything() })
     }) 
 
+    test("GET BY BUNDLE SERVICE - Should return status code 404", async () => {
+        await SensorDataController.getReadingByBundle(mockByBundleIdRequest, mockResponse)
+
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+
+        expect(mockStatus).toHaveBeenCalledWith(404)        
+    })
+
+    test("GET BY BUNDLE SERVICE - Should return error message", async () => {
+        await SensorDataController.getReadingByBundle(mockByBundleIdRequest, mockResponse)
+
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
+        expect(mockJson).toHaveBeenCalledWith({ success: false, error: "Reading not found" })
+    })
+
+    test("GET BY BUNDLE SERVICE - Should return status code 200", async () => {
+        await api
+            .post("/api/reading")
+            .send(validApiReq)
+
+        await SensorDataController.getReadingByBundle(mockByBundleIdRequest, mockResponse)
+
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
+        expect(mockStatus).toHaveBeenCalledWith(200)
+    })
+
+    test("GET BY BUNDLE SERVICE - Should return json", async () => {
+        await api
+            .post("/api/reading")
+            .send(validApiReq)
+
+        await SensorDataController.getReadingByBundle(mockByBundleIdRequest, mockResponse)
+
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
+        expect(mockJson).toHaveBeenCalledWith({ success: true, data: expect.anything() })
+    })
+
+    test("GET BY TASK SERVICE - Should return status code 404", async () => {
+        await SensorDataController.getReadingsByTask(mockByTaskRequest, mockResponse)
+
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
+        expect(mockStatus).toHaveBeenCalledWith(404)
+    })
+
+    test("GET BY TASK SERVICE - Should return error message", async () => {
+        await SensorDataController.getReadingsByTask(mockByTaskRequest, mockResponse)
+
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
+        expect(mockJson).toHaveBeenCalledWith({ success: false, error: "Readings not found" })
+    })
+
+    test("GET BY TASK SERVICE - Should return status code 200", async () => {
+        await api
+            .post("/api/reading")
+            .send(validApiReq)
+
+        await SensorDataController.getReadingsByTask(mockByTaskRequest, mockResponse)
+
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
+        expect(mockStatus).toHaveBeenCalledWith(200)
+    })
+
+    test("GET BY TASK SERVICE - Should return json", async () => {
+        await api
+            .post("/api/reading")
+            .send(validApiReq)
+
+        await SensorDataController.getReadingsByTask(mockByTaskRequest, mockResponse)
+
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
+        expect(mockJson).toHaveBeenCalledWith({ success: true, data: expect.anything() })
+    })
+
+    test("GET BY TASK AND NAME SERVICE - Should return status code 404", async () => {
+        await SensorDataController.getReadingsByTaskAndName(mockByTaskAndNameRequest, mockResponse)
+
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
+        expect(mockStatus).toHaveBeenCalledWith(404)
+    })
+
+    test("GET BY TASK AND NAME SERVICE - Should return error message", async () => {
+        await SensorDataController.getReadingsByTaskAndName(mockByTaskAndNameRequest, mockResponse)
+
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
+        expect(mockJson).toHaveBeenCalledWith({ success: false, error: "Readings not found" })
+    })
+
+    test("GET BY TASK AND NAME SERVICE - Should return status code 200", async () => {
+        await api
+            .post("/api/reading")
+            .send(validApiReq)
+
+        await SensorDataController.getReadingsByTaskAndName(mockByTaskAndNameRequest, mockResponse)
+
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
+        expect(mockStatus).toHaveBeenCalledWith(200)
+    })
+
+    test("GET BY TASK AND NAME SERVICE - Should return json", async () => {
+        await api
+            .post("/api/reading")
+            .send(validApiReq)
+
+        await SensorDataController.getReadingsByTaskAndName(mockByTaskAndNameRequest, mockResponse)
+
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
+        expect(mockJson).toHaveBeenCalledWith({ success: true, data: expect.anything() })
+    })
 })
 
 describe("READING DELETE", () => {
@@ -273,7 +492,18 @@ describe("READING DELETE", () => {
             .delete("/api/reading/12345")
             .expect(200)
             .expect("Content-type", /application\/json/)
-    })    
+    })  
+    
+    test("DELETE BY BUNDLEID - Should return status code 200", async () => {
+        await api
+            .post("/api/reading")
+            .send(validApiReq)
+
+        await api
+            .delete("/api/reading/bundle/1")
+            .expect(200)
+            .expect("Content-type", /application\/json/)
+    })
 
     test("DELETE SERVICE - Should return status code 200", async () => {
         await api

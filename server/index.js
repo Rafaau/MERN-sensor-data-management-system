@@ -22,9 +22,11 @@ app.get("/", (req, res) => {
 })
 
 app.use("/api", dataRouter)
+app.use("/api/files", express.static("files"))
+app.use("/files", (req, res, next) => { console.log(req.body) })
 
 seedDB()
 
-app.listen(apiPort, () => console.log(`Server running on port ${apiPort}`))
+app.listen(apiPort, "0.0.0.0", () => console.log(`Server running on port ${apiPort}`))
 
 module.exports = app

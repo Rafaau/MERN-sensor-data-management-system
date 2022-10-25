@@ -1,3 +1,7 @@
+body {
+    user-select: none;
+}
+
 ::-webkit-scrollbar {
     display: none;
 }
@@ -76,8 +80,21 @@
     width: 100%;
     border: solid 1px rgb(212, 212, 212);
     border-bottom: none;
-    margin-bottom: 6%;
-    text-align: left;
+    font-family: Trebuchet MS, sans-serif;
+    color: #7e7e7e;
+}
+
+.ReadingTableHeader {
+    padding: 1vw;
+    border-bottom: 1px solid rgb(212, 212, 212);
+}
+
+.ReadingTableCell {
+
+    font-size: 1.25vw;
+    width: 50%;
+    padding: 1vw;
+    border-bottom: 1px solid rgb(212, 212, 212);
 }
 
 .InputTable {
@@ -135,6 +152,11 @@
     padding-bottom: 2vh;
     padding-top: 2vh;
     border-bottom: solid 1px rgb(228, 228, 228);
+}
+
+.SolutionStepImage {
+    width: 45%;
+    margin-right: 2vw;
 }
 
 .ListCell {
@@ -241,7 +263,13 @@
 .PreviewChart {
     width: 70%;
     position: absolute;
-    top: 5vh;
+    top: 10%;
+    right: 0;
+}
+
+.PreviewChartContainer {
+    position: absolute;
+    top: 0;
     right: 0;
 }
 
@@ -328,6 +356,12 @@
     font-weight: bold;
     font-size: 1.2vw;
     margin-bottom: 0;
+}
+
+.ModalLabel {
+    color: #7E7E7E;
+    font-family: Trebuchet MS, sans-serif;
+    font-size: 1.2vw;
 }
 
 .MotionResizeDiv {
@@ -776,4 +810,8 @@
 	border-left: 0;
 	margin-left: -10px;
 	margin-top: -20px;   
+}
+
+.BundleLabel {
+    margin-top: 5vh;
 }

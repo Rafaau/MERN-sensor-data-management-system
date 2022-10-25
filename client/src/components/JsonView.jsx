@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react"
 
 import styles from "../style/site.module.css"
 import { 
+    InputText,
     ActionButton,
     BackButton, 
     JsonRow, 
@@ -36,6 +37,9 @@ const JsonView = (callback) => {
     const [previewView, setPreviewView] = useState(false)
     const [labelCount, setLabelCount] = useState(1)
     const [rowsCount, setRowsCount] = useState(2)
+    const [bundleName, setBundleName] = useState("")
+    const [sendWithBundle, setSendWithBundle] = useState(false)
+    const [showBundleForm, setShowBundleForm] = useState(false)
     const [timestamps, setTimestamps] = useState([])
     const [milliSeconds, setMilliseconds] = useState([])
     const [sensorLabels, setSensorLabels] = useState([])
@@ -44,6 +48,7 @@ const JsonView = (callback) => {
     const [sensorValue1, setSensorValue1] = useState([])
     const [sensorValue2, setSensorValue2] = useState([])
     const [sensorValue3, setSensorValue3] = useState([])
+    const [showInfoSpan, setShowInfoSpan] = useState(true)
     const [renderChart, setRenderChart] = useState(true)
     const [values, setValues] = useState()
     const [labels, setLabels] = useState([])
@@ -76,6 +81,13 @@ const JsonView = (callback) => {
     
         return () => window.removeEventListener("resize", handleWindowResize)
     }, [])
+
+    useEffect(() => {
+        if (bundleName)
+            setSendWithBundle(true)
+        else
+            setSendWithBundle(false)
+    }, [bundleName])
 
     const joinSensorValues = (number) => {
         sensorValues[number] = sensorValue1[number]+","+sensorValue2[number]+","+sensorValue3[number]
@@ -184,6 +196,28 @@ const JsonView = (callback) => {
     }
 
     const handleSendClick = async () => {
+        const userModel = JSON.parse(localStorage.getItem("userModel"))
+        const userId = userModel._id
+        let bundleId = 0
+        if (sendWithBundle) {
+            let getResponse = { status: "" }
+            try {
+                getResponse = await api.getBundleByName(bundleName)
+            } catch (err) {
+                
+            } finally {
+                if (getResponse.status == 200) {
+                    bundleId = getResponse.data.data._id
+                } else {
+                    let name = bundleName
+                    const groupId = 0
+                    var bundle = { name, userId, groupId }
+                    var createResponse = await api.createBundle(bundle)
+                    if (createResponse.status == 201)
+                    bundleId = createResponse.data.id
+                }
+            }
+        }
         setLoading(true)
         setShowButtons(false)
         console.log("started")
@@ -193,8 +227,6 @@ const JsonView = (callback) => {
         sensorlabels = sensorlabels.replace("undefined", "")
         const uuid = uuidv4()
         const name = fileName[0]
-        const userModel = JSON.parse(localStorage.getItem("userModel"))
-        const userId = userModel._id
         let successes = 0;
         for (let i = 0; i < rowsCount; i++)
         {
@@ -204,7 +236,7 @@ const JsonView = (callback) => {
             console.log(milliseconds)
             const sensorvalues = sensorValues[i]
             console.log(sensorvalues)
-            const sensordata = { uuid, userId, name, timestamp, milliseconds, sensorlabels, sensorvalues }
+            const sensordata = { uuid, userId, name, bundleId, timestamp, milliseconds, sensorlabels, sensorvalues }
             console.log(sensordata)
             const response = await api.insertReading(sensordata)
             if (response.status == 201)
@@ -224,12 +256,38 @@ const JsonView = (callback) => {
             openErrorSnackbar("Something went wrong while creating data")
     }
 
+    const handleChangeBundleName = event => {
+        setBundleName(event.target.value)
+    }
+
+    const handleSendToBundle = () => {
+        invokeHelper(helper + 1)
+        setPreviewView(true)     
+        setShowBundleForm(true)
+        setShowButtons(false)
+        setShowInfoSpan(false)
+    }
+
     return (
         <>
         <motion.div
             initial = {{ opacity: 1, y: 0 }}
             animate = {{ opacity: dismiss ? 0 : 1, y: dismiss ? 500 : 0 }}
             transition = {{ duration: 0.4 }}> 
+            { previewView ?
+                <motion.div
+                    initial = {{ opacity: 0 }}
+                    animate = {{ opacity: previewView ? 1 : 0 }}
+                    transition = {{ delay: 0.5, duration: 0.6}}>
+                    { renderChart ? 
+                    <ReadingChart
+                        labels={labels} 
+                        milliseconds={milliSeconds} 
+                        values={values}
+                        className={styles.PreviewChart}/>
+                    : null }
+                </motion.div> 
+            : null } 
             <motion.div
                 initial = {{ opacity: 0 }}
                 animate = {{ opacity: 1 }}
@@ -252,7 +310,7 @@ const JsonView = (callback) => {
                     </motion.div>
                     <FileLabel>
                         {fileName} 
-                        { !showButtons ?
+                        { showInfoSpan ?
                         <>
                             <JsonInfoButton onMouseOver={() => setShowInfo(true)} onMouseOut={() => setShowInfo(false)}/>
                             <motion.div
@@ -265,6 +323,20 @@ const JsonView = (callback) => {
                             </motion.div>
                         </>
                         : null }
+                        { showBundleForm ?
+                            <>
+                                <p className={styles.BundleFileLabel}>Bundle:</p>
+                                <InputText type="text" value={bundleName} onChange={handleChangeBundleName} className={styles.TypeLabel} />
+                                <motion.div
+                                    initial = {{ opacity: 0, x: 100}}
+                                    animate = {{ opacity: sendWithBundle ? 1 : 0, x: sendWithBundle ? 0 : 100 }}
+                                    transition = {{ duration: 0.4 }}>
+                                    <ActionButton id="test-send-button" onClick={handleSendClick}>
+                                        SEND
+                                    </ActionButton>
+                                </motion.div>
+                            </>
+                        : null }
                         { loading ? <Loading/> : null}
                         { showButtons ?
                         <>
@@ -276,14 +348,26 @@ const JsonView = (callback) => {
                                     PREVIEW
                                 </ActionButton>
                             </motion.div>
-                            <motion.div
-                                initial = {{ opacity: 0, x: 100}}
-                                animate = {{ opacity: showButtons ? 1 : 0, x: showButtons ? 0 : 100, y: previewView ? "-100%" : 0 }}
-                                transition = {{ duration: 0.4 }}>
-                                <ActionButton id="test-send-button" onClick={handleSendClick}>
-                                    SEND
-                                </ActionButton>
-                            </motion.div>
+                            { !showBundleForm ?
+                            <>
+                                <motion.div
+                                    initial = {{ opacity: 0, x: 100}}
+                                    animate = {{ opacity: showButtons ? 1 : 0, x: showButtons ? 0 : 100, y: previewView ? "-100%" : 0 }}
+                                    transition = {{ duration: 0.4 }}>
+                                    <ActionButton id="test-send-button" onClick={handleSendClick}>
+                                        SEND AS SINGLE
+                                    </ActionButton>
+                                </motion.div>
+                                <motion.div
+                                    initial = {{ opacity: 0, x: 100}}
+                                    animate = {{ opacity: showButtons ? 1 : 0, x: showButtons ? 0 : -500, y: previewView ? -50 : 0 }}
+                                    transition = {{ duration: 0.4 }}>
+                                    <ActionButton onClick={handleSendToBundle}>
+                                        SEND TO BUNDLE
+                                    </ActionButton>
+                                </motion.div>
+                            </>
+                            : null }
                         </>
                         : null }
                     </FileLabel>
@@ -357,18 +441,6 @@ const JsonView = (callback) => {
                 <>
                 { width > breakpoint ?
                 <>
-                <motion.div
-                    initial = {{ opacity: 0 }}
-                    animate = {{ opacity: previewView ? 1 : 0 }}
-                    transition = {{ delay: 0.5, duration: 0.6}}>
-                    { renderChart ? 
-                    <ReadingChart
-                        labels={labels} 
-                        milliseconds={milliSeconds} 
-                        values={values}
-                        className={styles.PreviewJsonChart}/>
-                    : null }
-                </motion.div> 
                 <motion.div
                     initial = {{ opacity: 0, y: 200}}
                     animate = {{ opacity: previewView ? 1 : 0, y: previewView ? "-20%" : 200 }}

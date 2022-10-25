@@ -1,10 +1,40 @@
-import React, { useEffect, useState, useRef } from "react"
-import api from "../api"
+import React, { useEffect, useState, useRef, useMemo } from "react"
+import api, { getBundles } from "../api"
 import { useSortBy, useTable, usePagination } from "react-table"
 import { useSnackbar } from "react-simple-snackbar"
 
-import { ContentBlock, Content, SingleReadingRow, RemoveButton, ListRow, ListHeader, ListTotal, SortIcon, TableFooter, NextPage, PreviousPage, EmptyListMessage } from "../style/styled-components"
-import { MobileContentBlock, MobileListRow, MobileListHeader, MobileListTotal, MobileSortIcon, MobileTableFooter, MobileNextPage, MobilePreviousPage, MobileEmptyListMessage } from "../style/styled-mobile-components"
+import { 
+    ContentBlock, 
+    Content, 
+    SingleReadingRow, 
+    RemoveButton, 
+    ListRow, 
+    ListHeader, 
+    ListTotal, 
+    SortIcon, 
+    TableFooter, 
+    NextPage, 
+    PreviousPage, 
+    EmptyListMessage, 
+    GroupListLabel, 
+    ExpandIcon, 
+    CollapseIcon,
+    MoveButton,
+    Flex,
+    AddGroupButton,
+    InputText,
+    EmptyList,
+    DeleteGray, } from "../style/styled-components"
+import { 
+    MobileContentBlock, 
+    MobileListRow, 
+    MobileListHeader, 
+    MobileListTotal,
+    MobileSortIcon, 
+    MobileTableFooter, 
+    MobileNextPage, 
+    MobilePreviousPage, 
+    MobileEmptyListMessage } from "../style/styled-mobile-components"
 import styles from "../style/site.module.css"
 import "bootstrap/dist/css/bootstrap.min.css"
 import Modal from "react-bootstrap/Modal"
@@ -12,6 +42,7 @@ import Options from "../style/options.js"
 import ReactTooltip from "react-tooltip"
 import { Tooltips, NotAuthorizedView } from "../components"
 import { motion } from "framer-motion"
+import Select from "react-select"
 
 function Table({columns, data}) {
     const didMount = useRef(true)
@@ -21,6 +52,7 @@ function Table({columns, data}) {
     const [openSuccessSnackbar, closeSuccessSnackbar] = useSnackbar(optionsInstance.successSnackbarOptions)
     const [openErrorSnackbar, closeErrorSnackbar] = useSnackbar(optionsInstance.errorSnackbarOptions)
     const [readingObj, passReadingObj] = useState({})
+    const [bundleObj, passBundleObj] = useState({})
 
     const {
         getTableProps,
@@ -33,7 +65,7 @@ function Table({columns, data}) {
         canPreviousPage,
         prepareRow,
 
-    } = useTable({ columns, data, initialState: { pageSize: 7 } }, useSortBy, usePagination)
+    } = useTable({ columns, data, initialState: { pageSize: 3 } }, useSortBy, usePagination)
 
     return (
         <>
@@ -69,8 +101,12 @@ function Table({columns, data}) {
         </table>
         </div>   
         <TableFooter>
+            { canPreviousPage ?
             <PreviousPage onClick={() => previousPage()} disabled={!canPreviousPage}></PreviousPage>
+            : null }
+            { canNextPage ?
             <NextPage onClick={() => nextPage()} disabled={!canNextPage}></NextPage>
+            : null }
         </TableFooter> 
       </>       
     )
@@ -145,21 +181,37 @@ function SensorDataList(callback) {
     const [user, setUser] = useState({})
     const [logged, setLogged] = useState(false)
     const [sensordatas, setSensorDatas] = useState([])
+    const [readingBundles, setReadingBundles] = useState([])
+    const [bundleGroups, setBundleGroups] = useState([])
     const [show, setShow] = useState(false)
+    const [showMove, setShowMove] = useState(false)
     const [helper, invokeHelper] = useState(1)
     var optionsInstance = new Options()
     const [openSuccessSnackbar, closeSuccessSnackbar] = useSnackbar(optionsInstance.successSnackbarOptions)
     const [openErrorSnackbar, closeErrorSnackbar] = useSnackbar(optionsInstance.errorSnackbarOptions)
     const [readingObj, passReadingObj] = useState({})
+    const [bundleObj, passBundleObj] = useState({})
+    const [groupObj, passGroupObj] = useState({})
     const [noReadingsView, setNoReadingsView] = useState(false)
+    const [noBundlesView, setNoBundlesView] = useState(false)
     const [width, setWidth] = useState(window.innerWidth)
+    const [showSingleReadings, setShowSingleReadings] = useState(false)
+    const [showReadingBundle, setShowReadingBundle] = useState(false)
+    const [showBundleGroup, setShowBundleGroup] = useState("")
+    const [currentBundleGroup, setCurrentBundleGroup] = useState([])
+    const [moveSelect, setMoveSelect] = useState([])
+    const [selectValue, setSelectValue] = useState("")
+    const [showCreate, setShowCreate] = useState(false)
+    const [createInput, setCreateInput] = useState("")
+    const [showBundleRemove, setShowBundleRemove] = useState(false)
+    const [showGroupRemove, setShowGroupRemove] = useState(false)
     const breakpoint = 620;
 
     useEffect(() => {
+        const userModel = JSON.parse(localStorage.getItem("userModel"))
+
         async function getSensorDatas() {
             setupUser()
-            const userModel = JSON.parse(localStorage.getItem("userModel"))
-            console.log(userModel)
             let response = { status: "" }
             try {
                 response = await api.getReadingByUserId(userModel._id)
@@ -174,14 +226,44 @@ function SensorDataList(callback) {
             }
         }
 
+        async function getReadingBundles() {
+            let response = { status: "" }
+            try {
+                response = await api.getBundlesByUserId(userModel._id)
+            } catch (err) {
+                setNoBundlesView(true)
+            } finally {
+                if (response.status == 200) {
+                    setReadingBundles(response.data.data)
+                    setNoBundlesView(false)
+                }
+            }
+        }
+
+        async function getBundleGroups() {
+            let response = { status: "" }
+            try {
+                response = await api.getBundleGroupsByUserId(userModel._id)
+            } catch (err) {
+            } finally {
+                if (response.status == 200) {
+                    setBundleGroups(response.data.data)
+                }
+            }
+        }
+
         if (didMount.current ) {
             setupUser()
             getSensorDatas()
+            getReadingBundles()
+            getBundleGroups()
             didMount.current = false
             return
         }
 
         getSensorDatas()
+        getReadingBundles()
+        getBundleGroups()
     }, [helper])
 
     useEffect(() => {
@@ -203,9 +285,44 @@ function SensorDataList(callback) {
     const handleClose = () => {
         setShow(false)
     }
+
+    const handleCloseBundleRemove = () => {
+        setShowBundleRemove(false)
+    }
+
+    const handleCloseMove = () => {
+        setShowMove(false)
+    }
+
     const handleShow = (obj) => {
         setShow(true)
         passReadingObj({...obj})
+    }
+
+    const handleCloseCreate = () => {
+        setShowCreate(false)
+    }
+
+    const handleShowCreate = () => {
+        setShowCreate(true)
+    }
+
+    const handleShowBundleModal = (obj) => {
+        setShowBundleRemove(true)
+        passBundleObj({...obj})
+    }
+
+    const handleShowMoveBundleModal = (obj) => {
+        setShowMove(true)
+        passBundleObj({...obj})
+        const options = []
+        bundleGroups.forEach(group => {
+            if (group._id != obj.groupId)
+                options.push({ value: group._id, label: group.name })
+        })
+        if (obj.groupId != 0)
+            options.push({ value: 0, label: "Reading bundles" })
+        setMoveSelect(options)
     }
 
     let showData = true
@@ -213,82 +330,253 @@ function SensorDataList(callback) {
         showData = false
     }
 
-    const distinctedByUuid = [...new Map(sensordatas.map(sensordata => [sensordata["uuid"], sensordata])).values()]
-        const fixedDate = distinctedByUuid.map(sensordata => { 
-            return {...sensordata, createdAt: new Date(sensordata.createdAt).toLocaleString()}
-        })
+    const filteredByBundleId = sensordatas.filter(sensordata => sensordata.bundleId == 0)
+    const readingCount = [...new Map(sensordatas.map(sensordata => [sensordata["uuid"], sensordata])).values()].length
+    const distinctedByUuid = [...new Map(filteredByBundleId.map(sensordata => [sensordata["uuid"], sensordata])).values()]
+    const fixedDate = distinctedByUuid.map(sensordata => { 
+        return {...sensordata, createdAt: new Date(sensordata.createdAt).toLocaleString()}
+    })
 
-        const data = React.useMemo(() => fixedDate,
-        [
-            {
-                delCol: "",
-            },
-        ],
-        [])
-
-        const columns = [
-            {
-                Header: <>CREATED AT { width > breakpoint ? <SortIcon/> : <MobileSortIcon/> }</>,
-                accessor: "createdAt",
-                Cell: props => 
-                    <SingleReadingRow onClick={(e) => {viewDetails(e, props.row.original.uuid)}}>{props.value}</SingleReadingRow>,
-            },
-            {
-                Header: <>NAME { width > breakpoint ? <SortIcon/> : <MobileSortIcon/> }</>,
-                accessor: "name",
-                Cell: props => 
-                    <SingleReadingRow onClick={(e) => {viewDetails(e, props.row.original.uuid)}}>{props.value}</SingleReadingRow>,
-            },
-            {
-                Header: "",
-                accessor: "uuid",
-                Cell: function(props) {
-                    return (
-                        <>
-                            <RemoveButton id="test-remove-button" data-tip data-for="DeleteReading" onClick={() => {handleShow(props.row.original)}}/>
-                            <Tooltips/>
-                            <Modal show={show} onHide={handleClose} animation={true} centered backdrop="static" backdropClassName={styles.ModalBackdrop}>
-                                <Modal.Header closeButton>
-                                    <h4>Confirm reading delete</h4>
-                                </Modal.Header>
-                                <Modal.Body>
-                                    Are you sure you want to permanent remove this reading from list?
-                                </Modal.Body>
-                                <Modal.Footer>
-                                    <button onClick={handleClose} className={styles.CancelButton}>
-                                        Cancel
-                                    </button>
-                                    <button id="test-confirm-button" onClick={(e) => {deleteReading(e, readingObj.uuid)}} className={styles.DeleteButton}>
-                                        Delete
-                                    </button>
-                                </Modal.Footer>
-                            </Modal>   
-                        </>     
-                    )             
-            },
+    const data = useMemo(() => fixedDate,
+    [
+        {
+            delCol: "",
         },
-        ]
+    ],
+    [])
 
-        const deleteReading = async (event, uuid) => {
-            event.preventDefault()
-            const response = await api.deleteReading(uuid) 
-            if (response.status == 200) {
-                openSuccessSnackbar("Reading deleted successfully!")
-                invokeHelper({...helper})         
-            } 
-            else {
-                openErrorSnackbar("Something went wrong while deleting reading")
-                invokeHelper({...helper}) 
-            }
-            handleClose()
-            callback.onDelete()
-        }
-     
-        const viewDetails = (event, uuid) => {
-            event.preventDefault()
-            window.location.href = `/sensordata/${uuid}`
-        }
+    const columns = [
+        {
+            Header: <>CREATED AT { width > breakpoint ? <SortIcon/> : <MobileSortIcon/> }</>,
+            accessor: "createdAt",
+            Cell: props => 
+                <SingleReadingRow onClick={(e) => {viewDetails(e, props.row.original.uuid)}}>{props.value}</SingleReadingRow>,
+        },
+        {
+            Header: <>NAME { width > breakpoint ? <SortIcon/> : <MobileSortIcon/> }</>,
+            accessor: "name",
+            Cell: props => 
+                <SingleReadingRow onClick={(e) => {viewDetails(e, props.row.original.uuid)}}>{props.value}</SingleReadingRow>,
+        },
+        {
+            Header: "",
+            accessor: "uuid",
+            Cell: function(props) {
+                return (
+                    <>
+                        <RemoveButton id="test-remove-button" data-tip data-for="DeleteReading" onClick={() => {handleShow(props.row.original)}}/>
+                        <Tooltips/>
+                    </>     
+                )             
+        },
+    },
+    ]
 
+    const filteredByGroupId = readingBundles.filter(bundle => bundle.groupId == 0)
+    const bundlesFixedDate = filteredByGroupId.map(bundle => { 
+        return {...bundle, createdAt: new Date(bundle.createdAt).toLocaleString()}
+    })
+
+    const bundleData = useMemo(() => bundlesFixedDate,
+    [
+        {
+            delCol: "",
+        },
+    ],
+    [])
+
+    const deleteReading = async (event, uuid) => {
+        event.preventDefault()
+        console.log(uuid)
+        const response = await api.deleteReading(uuid) 
+        if (response.status == 200) {
+            openSuccessSnackbar("Reading deleted successfully!")
+            invokeHelper({...helper})         
+        } 
+        else {
+            openErrorSnackbar("Something went wrong while deleting reading")
+            invokeHelper({...helper}) 
+        }
+        handleClose()
+        callback.onDelete()
+    }
+
+    const deleteBundle = async (event, id) => {
+        event.preventDefault()
+        await api.deleteReadingByBundleId(id)
+        const response = await api.deleteBundle(id) 
+        if (response.status == 200) {
+            openSuccessSnackbar("Bundle deleted successfully!")
+            invokeHelper({...helper})         
+        } 
+        else {
+            openErrorSnackbar("Something went wrong while deleting bundle")
+            invokeHelper({...helper}) 
+        }
+        handleClose()
+        callback.onDelete()
+    }
+    
+    const viewDetails = (event, uuid) => {
+        event.preventDefault()
+        window.location.href = `/sensordata/${uuid}`
+    }
+
+    const viewBundleDetails = (event, id) => {
+        event.preventDefault()
+        window.location.href = `/sensordata/bundle/${id}`
+    }
+
+    const handleOnSelectChange = event => {
+        setSelectValue(event.value)
+    }
+
+    const moveBundle = async (event, bundle) => {
+        event.preventDefault()
+        const bundleToUpdate = {
+            _id: bundle._id,
+            name: bundle.name,
+            userId: bundle.userId,
+            groupId: selectValue
+        }
+        const response = await api.updateBundle(bundle._id, bundleToUpdate) 
+        if (response.status == 200) {
+            openSuccessSnackbar("Bundle moved successfully!")
+            invokeHelper({...helper})      
+        } 
+        else {
+            openErrorSnackbar("Something went wrong while moving bundle")
+            invokeHelper({...helper}) 
+        }
+        setShowMove(false)   
+    }
+
+    const createGroup = async () => {
+        const userModel = await api.getUserByEmail(user.email)
+        const userId = userModel.data.data._id
+        const name = createInput
+        const bundleGroup = { name, userId }
+        const response = await api.createBundleGroup(bundleGroup)
+        if (response.status == 201) {
+            openSuccessSnackbar("Group created successfully!")
+            invokeHelper({...helper})         
+        } 
+        else {
+            openErrorSnackbar("Something went wrong while creating group")
+            invokeHelper({...helper}) 
+        }
+        setShowCreate(false)   
+    }
+
+    const groupBundleData = useMemo(() => currentBundleGroup,
+    [
+        {
+            delCol: "",
+        },
+    ],
+    [])
+
+    const groupBundleColumns = [
+        {
+            Header: <>CREATED AT { width > breakpoint ? <SortIcon/> : <MobileSortIcon/> }</>,
+            accessor: "createdAt",
+            Cell: props => 
+                <SingleReadingRow onClick={(e) => {viewBundleDetails(e, props.row.original._id)}}>{props.value}</SingleReadingRow>,
+        },
+        {
+            Header: <>NAME { width > breakpoint ? <SortIcon/> : <MobileSortIcon/> }</>,
+            accessor: "name",
+            Cell: props => 
+                <SingleReadingRow onClick={(e) => {viewBundleDetails(e, props.row.original._id)}}>{props.value}</SingleReadingRow>,
+        },
+        {
+            Header: "",
+            accessor: "_id",
+            Cell: function(props) {
+                return (
+                    <>
+                        <Flex>
+                            <MoveButton data-tip data-for="MoveBundle" onClick={() => {handleShowMoveBundleModal(props.row.original)}}/>
+                            <RemoveButton id="test-remove-button" data-tip data-for="DeleteReading" onClick={() => {handleShowBundleModal(props.row.original)}}/>
+                        </Flex>
+                        <Tooltips/>
+                    </>     
+                )             
+        },
+    },
+    ]
+
+    const handleShowGroupRemove = (obj) => {
+        setShowGroupRemove(true)
+        passGroupObj({...obj})
+    }
+
+    const handleCloseGroupRemove = () => {
+        setShowGroupRemove(false)
+    }
+
+    const deleteGroup = async () => {
+        var bundlesInGroupResponse = await api.getBundlesByGroupId(groupObj._id)
+        if (bundlesInGroupResponse.status == 200) {
+            var bundlesInGroup = bundlesInGroupResponse.data.data
+            bundlesInGroup.forEach(async (bundle) => {
+                await api.deleteReadingByBundleId(bundle._id)
+                await api.deleteBundle(bundle._id)
+            })
+        }
+        var deleteGroupResponse = await api.deleteBundleGroup(groupObj._id)
+        if (deleteGroupResponse.status == 200) {
+            openSuccessSnackbar("Group deleted successfully!")
+            invokeHelper({...helper})         
+        } 
+        else {
+            openErrorSnackbar("Something went wrong while deleting group")
+            invokeHelper({...helper}) 
+        }
+        setShowGroupRemove(false)   
+    }
+
+    const BundleGroups = () => {
+        let rows = []
+        for (let i = 0; i < bundleGroups.length; i++) {
+            const filteredByGroupId = readingBundles.filter(bundle => bundle.groupId == bundleGroups[i]._id)
+            const mapped = filteredByGroupId.map(bundle => { 
+                return {...bundle, createdAt: new Date(bundle.createdAt).toLocaleString()}
+            })
+
+            rows.push(
+                <>
+                <GroupListLabel>
+                    { bundleGroups[i].name }
+                    { showBundleGroup != bundleGroups[i].name ?
+                        <ExpandIcon onClick = {() => { setShowBundleGroup(bundleGroups[i].name); setCurrentBundleGroup(mapped); setShowSingleReadings(false); setShowReadingBundle(false) } } />
+                        :
+                        <CollapseIcon onClick = {() => { setShowBundleGroup("") } } /> 
+                    }
+                    <DeleteGray onClick = {() => { handleShowGroupRemove(bundleGroups[i]) } } />
+                </GroupListLabel>
+                { showBundleGroup == bundleGroups[i].name ? 
+                <>
+                    { mapped.length ? 
+                    <motion.div
+                        initial = {{ opacity: 0, y: "-100%" }}
+                        animate = {{ opacity: 1, y: "0%" }}
+                        transition = {{ delay: 0.2 }}>
+                        <Table 
+                            columns = { groupBundleColumns } 
+                            data = { groupBundleData } />  
+                    </motion.div> 
+                    : 
+                    <EmptyList>
+                        You didn't insert any reading yet
+                    </EmptyList> }
+                </>
+                : null } 
+                </>
+            )         
+        }
+        return rows
+    }
 
     return (
         <>
@@ -297,8 +585,10 @@ function SensorDataList(callback) {
         <ContentBlock>
                 { logged ?
                 <>  
-                    { !noReadingsView ?
-                        <>
+                    <ReactTooltip id="AddBundleGroup" type="dark" effect="solid">
+                        <span>New bundle group</span>
+                    </ReactTooltip> 
+
                             <motion.div
                                 initial = {{ opacity: 0, y: "-20%" }}
                                 animate = {{ opacity: 1, y: "0%" }}
@@ -308,28 +598,65 @@ function SensorDataList(callback) {
                                         All readings
                                     </ListHeader>
                                     <ListTotal>
-                                        Total: {distinctedByUuid.length}
+                                        Total: {readingCount}
                                     </ListTotal>
                                 </ListRow>
+                                <ListRow style={{height: "36px"}}>
+                                    <AddGroupButton data-tip data-for="AddBundleGroup" onClick={handleShowCreate}/>
+                                </ListRow>
                             </motion.div>
-                            <motion.div
-                                initial = {{ opacity: 0, y: "-100%" }}
-                                animate = {{ opacity: 1, y: "0%" }}
-                                transition = {{ delay: 0.2 }}>
-                                <Table 
-                                    columns = { columns } 
-                                    data = { data } />  
-                            </motion.div> 
+                            <BundleGroups />
+                            <GroupListLabel>
+                                Reading bundles
+                                { !showReadingBundle ?
+                                    <ExpandIcon onClick = {() => { setShowReadingBundle(true); setShowSingleReadings(false); setShowBundleGroup("") } } />
+                                    :
+                                    <CollapseIcon onClick = {() => { setShowReadingBundle(false) } } /> 
+                                }
+                            </GroupListLabel>
+                            { showReadingBundle ?
+                            <>
+                                { bundlesFixedDate.length ?
+                                <motion.div
+                                    initial = {{ opacity: 0, y: "-100%" }}
+                                    animate = {{ opacity: 1, y: "0%" }}
+                                    transition = {{ delay: 0.2 }}>
+                                    <Table 
+                                        columns = { groupBundleColumns } 
+                                        data = { bundleData } />  
+                                </motion.div> 
+                                :
+                                <EmptyList>
+                                    You didn't insert any bundle yet
+                                </EmptyList> }
+                            </>
+                            : null }
+                            <GroupListLabel>
+                                Single readings
+                                { !showSingleReadings ?
+                                    <ExpandIcon onClick = {() => { setShowSingleReadings(true); setShowReadingBundle(false); setShowBundleGroup("") } } />
+                                    :
+                                    <CollapseIcon onClick = {() => { setShowSingleReadings(false) } } /> 
+                                }
+                            </GroupListLabel>
+                            { showSingleReadings ?
+                            <>
+                                { fixedDate.length ?
+                                <motion.div
+                                    initial = {{ opacity: 0, y: "-100%" }}
+                                    animate = {{ opacity: 1, y: "0%" }}
+                                    transition = {{ delay: 0.2 }}>
+                                    <Table 
+                                        columns = { columns } 
+                                        data = { data } />  
+                                </motion.div> 
+                                : 
+                                <EmptyList>
+                                    You didn't insert any reading yet
+                                </EmptyList> }
+                            </>
+                            : null }
                         </> 
-                    : 
-                        <motion.div
-                            initial = {{ opacity: 0 }}
-                            animate = {{ opacity: 1 }}>
-                            <EmptyListMessage>
-                                You didn't insert any reading yet
-                            </EmptyListMessage>
-                        </motion.div> }
-                </>
                 : <NotAuthorizedView/> }          
         </ContentBlock>
         </>
@@ -374,6 +701,87 @@ function SensorDataList(callback) {
                 : <NotAuthorizedView/> }           
             </MobileContentBlock>
         </> }
+        <Modal show={show} onHide={handleClose} animation={true} centered backdrop="static" backdropClassName={styles.ModalBackdrop}>
+            <Modal.Header closeButton>
+                <h4>Confirm reading delete</h4>
+            </Modal.Header>
+            <Modal.Body>
+                Are you sure you want to permanent remove this reading from list?
+            </Modal.Body>
+            <Modal.Footer>
+                <button onClick={handleClose} className={styles.CancelButton}>
+                    Cancel
+                </button>
+                <button id="test-confirm-button" onClick={(e) => {deleteReading(e, readingObj.uuid)}} className={styles.DeleteButton}>
+                    Delete
+                </button>
+            </Modal.Footer>
+        </Modal> 
+        <Modal show={showBundleRemove} onHide={handleCloseBundleRemove} animation={true} centered backdrop="static" backdropClassName={styles.ModalBackdrop}>
+            <Modal.Header closeButton>
+                <h4>Confirm bundle delete</h4>
+            </Modal.Header>
+            <Modal.Body>
+                Are you sure you want to permanent remove this bundle from list?
+            </Modal.Body>
+            <Modal.Footer>
+                <button onClick={handleCloseBundleRemove} className={styles.CancelButton}>
+                    Cancel
+                </button>
+                <button id="test-confirm-button" onClick={(e) => {deleteBundle(e, bundleObj._id)}} className={styles.DeleteButton}>
+                    Delete
+                </button>
+            </Modal.Footer>
+        </Modal> 
+        <Modal show={showMove} onHide={handleCloseMove} animation={true} centered backdrop="static" backdropClassName={styles.ModalBackdrop}>
+            <Modal.Header closeButton>
+                <h4>Move bundle to another group</h4>
+            </Modal.Header>
+            <Modal.Body>
+                <Select options={moveSelect} onChange={handleOnSelectChange} />
+            </Modal.Body>
+            <Modal.Footer>
+                <button onClick={handleCloseMove} className={styles.CancelButton}>
+                    Cancel
+                </button>
+                <button onClick={(e) => {moveBundle(e, bundleObj)}} className={styles.DeleteButton}>
+                    Move
+                </button>
+            </Modal.Footer>
+        </Modal>
+        <Modal show={showCreate} onHide={handleCloseCreate} animation={true} centered backdrop="static" backdropClassName={styles.ModalBackdrop}>
+            <Modal.Header closeButton>
+                <h4>Add new bundle group</h4>
+            </Modal.Header>
+            <Modal.Body>
+                <p className={styles.ModalLabel}>Name:</p>
+                <InputText value={createInput} onChange={(event) => {setCreateInput(event.target.value)}}/>
+            </Modal.Body>
+            <Modal.Footer style={{borderTop: "0"}}>
+                <button onClick={handleCloseCreate} className={styles.CancelButton}>
+                    Cancel
+                </button>
+                <button onClick={createGroup} className={styles.DeleteButton}>
+                    Create
+                </button>
+            </Modal.Footer>
+        </Modal>
+        <Modal show={showGroupRemove} onHide={handleCloseGroupRemove} animation={true} centered backdrop="static" backdropClassName={styles.ModalBackdrop}>
+            <Modal.Header closeButton>
+                <h4>Confirm bundle group delete</h4>
+            </Modal.Header>
+            <Modal.Body>
+                Are you sure you want to permanent remove this bundle group from list?
+            </Modal.Body>
+            <Modal.Footer>
+                <button onClick={handleCloseGroupRemove} className={styles.CancelButton}>
+                    Cancel
+                </button>
+                <button id="test-confirm-button" onClick={(e) => {deleteGroup(e)}} className={styles.DeleteButton}>
+                    Delete
+                </button>
+            </Modal.Footer>
+        </Modal> 
         </>
     )
 }

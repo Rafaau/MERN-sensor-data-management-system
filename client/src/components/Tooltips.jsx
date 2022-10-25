@@ -19,7 +19,10 @@ const Tooltips = () => {
             </ReactTooltip>   
             <ReactTooltip id="DeleteReading" type="dark" effect="solid">
                 <span>Delete reading</span>
-            </ReactTooltip>       
+            </ReactTooltip> 
+            <ReactTooltip id="MoveBundle" type="dark" effect="solid">
+                <span>Move bundle</span>
+            </ReactTooltip>          
         </>                    
     )
 }

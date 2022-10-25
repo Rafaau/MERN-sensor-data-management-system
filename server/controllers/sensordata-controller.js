@@ -38,7 +38,7 @@ createReading = async (req, res) => {
 }
 
 getReadingByUuid = async (req, res) => {
-    await SensorData.find({ uuid: req.params.uuid}, (err, readings) => {
+    await SensorData.find({ uuid: req.params.uuid }, (err, readings) => {
         if (err) {
             return res.status(400).json({ success: false, error: err })
         }
@@ -54,7 +54,7 @@ getReadingByUuid = async (req, res) => {
 }
 
 getReadingByUserId = async (req, res) => {
-    await SensorData.find({ userId: req.params.userId}, (err, readings) => {
+    await SensorData.find({ userId: req.params.userId }, (err, readings) => {
         if (err) {
             return res.status(400).json({ success: false, error: err })
         }
@@ -63,6 +63,20 @@ getReadingByUserId = async (req, res) => {
             return res
                 .status(404)
                 .json({ success: false, error: "Reading not found" });
+        }
+
+        return res.status(200).json({ success: true, data: readings })
+    }).catch(err => console.log(err))
+}
+
+getReadingByBundle = async (req, res) => {
+    await SensorData.find({ bundleId: req.params.bundleId }, (err, readings) => {
+        if (err) {
+            return res.status(400).json({ success: false, error: err })
+        }
+
+        if (!readings.length) {
+            return res.status(404).json({ success: false, error: "Reading not found" })
         }
 
         return res.status(200).json({ success: true, data: readings })
@@ -92,7 +106,21 @@ deleteReading = async (req, res) => {
         }
 
         if (!sensordata) {
-            return res.status(404).json({ success: false, error: "Readings not found"})
+            return res.status(404).json({ success: false, error: "Readings not found" })
+        }
+
+        return res.status(200).json({ success: true, data: sensordata })
+    }).catch(err => console.log(err))
+}
+
+deleteReadingByBundleId = async (req, res) => {
+    await SensorData.deleteMany({ bundleId: req.params.bundleId }, (err, sensordata) => {
+        if (err) {
+            return res.status(400).json({ success: false, error: err })
+        }
+
+        if (!sensordata) {
+            return res.status(404).json({ success: false, error: "Readings not found" })
         }
 
         return res.status(200).json({ success: true, data: sensordata })
@@ -137,10 +165,108 @@ readFile = async (req, res) => {
                 else
                     return res.status(400).json({ success: false, error: err })
             })
+    })      
+}
 
+streamDataToDb = async (req, res) => {
+    const body = req.body
+
+    if (!body) {
+        return res
+            .status(400)
+            .json({
+                success: false,
+                error: "Cannot get post body"
+            })
+    }
+
+    body.sensors.forEach(async sensor => {
+        const uuid = body.uuid
+        const userId = body.uuid
+        const name = sensor.name
+        const bundleId = "1"
+        const timestamp = Date.now()
+        const milliseconds = 1
+        const sensorlabels = Object.keys(sensor)[1]+","+(Object.keys(sensor)[2] == undefined ? "" : Object.keys(sensor)[2])+","+(Object.keys(sensor)[3] == undefined ? "" : Object.keys(sensor)[3])
+        const sensorvalues = sensor.value0+","+(sensor.value1 == undefined ? "" : sensor.value1)+","+(sensor.value2 == undefined ? "" : sensor.value2)
+        const task = body.task
+
+        const sensordata = { uuid, userId, name, bundleId, timestamp, milliseconds, sensorlabels, sensorvalues, task }
+        console.log(sensordata)
+
+        const sensorData = new SensorData(sensordata)
+
+        if (!sensorData) {
+                console.log("err")
+        }
+
+        sensorData
+            .save()
+            .then(() => {
+                res.write(sensorData)
+            })
+            .catch(err => {
+                console.log("err")
+            })
     })
+}
 
-        
+getReadingsByTask = async (req, res) => {
+    await SensorData.find({ task: req.params.task }, (err, readings) => {
+        if (err) {
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    error: err,
+                })
+        }
+
+        if (!readings.length) {
+            return res
+                .status(404)
+                .json({
+                    success: false,
+                    error: "Readings not found"
+                })
+        }
+
+        return res
+            .status(200)
+            .json({
+                success: true,
+                data: readings
+            })
+    }).catch(err => console.log(err))
+}
+
+getReadingsByTaskAndName = async (req, res) => {
+    await SensorData.find({ task: req.params.task, name: req.params.name }, (err, readings) => {
+        if (err) {
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    error: err,
+                })
+        }
+
+        if (!readings.length) {
+            return res
+                .status(404)
+                .json({
+                    success: false,
+                    error: "Readings not found"
+                })
+        }
+
+        return res
+            .status(200)
+            .json({
+                success: true,
+                data: readings
+            })
+    }).catch(err => console.log(err))
 }
 
 module.exports = {
@@ -148,7 +274,12 @@ module.exports = {
     getAllReadings,
     getReadingByUuid,
     getReadingByUserId,
+    getReadingByBundle,
     deleteReading,
+    deleteReadingByBundleId,
     downloadFile,
     readFile,
+    streamDataToDb,
+    getReadingsByTask,
+    getReadingsByTaskAndName,
 }

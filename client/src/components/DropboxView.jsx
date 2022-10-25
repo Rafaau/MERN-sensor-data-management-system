@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react"
 import styles from "../style/site.module.css"
 import { 
+    InputText,
     DropboxButton, 
     DropboxContainer, 
     DropboxRow, 
@@ -33,6 +34,9 @@ const DropboxView = (callback) => {
     const [helper, invokeHelper] = useState(1)
     const [showButtons, setShowButtons] = useState(false)
     const [previewView, setPreviewView] = useState(false)
+    const [bundleName, setBundleName] = useState("")
+    const [sendWithBundle, setSendWithBundle] = useState(false)
+    const [showBundleForm, setShowBundleForm] = useState(false)
     const [labelCount, setLabelCount] = useState(1)
     const [rowsCount, setRowsCount] = useState(2)
     const [timestamps, setTimestamps] = useState([])
@@ -87,6 +91,13 @@ const DropboxView = (callback) => {
         return () => window.removeEventListener("resize", handleWindowResize)
     }, [])
 
+    useEffect(() => {
+        if (bundleName)
+            setSendWithBundle(true)
+        else
+            setSendWithBundle(false)
+    }, [bundleName])
+
     const joinSensorValues = (number) => {
         sensorValues[number] = sensorValue1[number]+","+sensorValue2[number]+","+sensorValue3[number]
         sensorValues[number] = sensorValues[number].replace("undefined", "")
@@ -106,12 +117,14 @@ const DropboxView = (callback) => {
     }
 
     const handleDropboxClick = () => {
-        setValues([])
-        setMilliseconds([])
-        setTimestamps([])
-        setLabels(",undefined,undefined")    
-        invokeHelper(helper + 1)
-        setShowButtons(false)
+        if (!previewView) {
+            setValues([])
+            setMilliseconds([])
+            setTimestamps([])
+            setLabels(",undefined,undefined")    
+            invokeHelper(helper + 1)
+            setShowButtons(false)
+        }
     }
 
     const setupData = async () => {
@@ -131,9 +144,9 @@ const DropboxView = (callback) => {
                 for (let i = 0; i < csvOutput.length; i++) {
                     timestamps[i] = Object.entries(csvOutput[i]).slice(0,1).map(entry => entry[1])[0]
                     milliSeconds[i] = parseFloat(Object.entries(csvOutput[i]).slice(1,2).map(entry => entry[1])).toFixed(2)
-                    sensorValue1[i] = Object.entries(csvOutput[i]).slice(2,3).map(entry => entry[1])
-                    sensorValue2[i] = Object.entries(csvOutput[i]).slice(3,4).map(entry => entry[1])
-                    sensorValue3[i] = Object.entries(csvOutput[i]).slice(4).map(entry => entry[1])
+                    sensorValue1[i] = (Object.entries(csvOutput[i]).slice(2,3).map(entry => entry[1])).toString().replace(/[^\d.-]/g, "")
+                    sensorValue2[i] = (Object.entries(csvOutput[i]).slice(3,4).map(entry => entry[1])).toString().replace(/[^\d.-]/g, "")
+                    sensorValue3[i] = (Object.entries(csvOutput[i]).slice(4).map(entry => entry[1])).toString().replace(/[^\d.-]/g, "")
                     joinSensorValues(i)               
                 }
                 setSensorLabels({...sensorLabels, 0: csvLabels[0], 1: csvLabels[1], 2: csvLabels[2]})   
@@ -192,6 +205,28 @@ const DropboxView = (callback) => {
     }
 
     const handleSendClick = async () => {
+        const userModel = JSON.parse(localStorage.getItem("userModel"))
+        const userId = userModel._id
+        let bundleId = 0
+        if (sendWithBundle) {
+            let getResponse = { status: "" }
+            try {
+                getResponse = await api.getBundleByName(bundleName)
+            } catch (err) {
+                
+            } finally {
+                if (getResponse.status == 200) {
+                    bundleId = getResponse.data.data._id
+                } else {
+                    let name = bundleName
+                    const groupId = 0
+                    var bundle = { name, userId, groupId }
+                    var createResponse = await api.createBundle(bundle)
+                    if (createResponse.status == 201)
+                    bundleId = createResponse.data.id
+                }
+            }
+        }
         setLoading(true)
         setShowButtons(false)
         joinSensorValues()
@@ -200,19 +235,13 @@ const DropboxView = (callback) => {
         sensorlabels = sensorlabels.replace("undefined", "")
         const uuid = uuidv4()
         const name = fileName
-        const userModel = JSON.parse(localStorage.getItem("userModel"))
-        const userId = userModel._id
         let successes = 0;
         for (let i = 0; i < rowsCount; i++)
         {
             const timestamp = timestamps[i]
-            console.log(timestamp)
             const milliseconds = milliSeconds[i]
-            console.log(milliseconds)
             const sensorvalues = sensorValues[i]
-            console.log(sensorvalues)
-            const sensordata = { uuid, userId, name, timestamp, milliseconds, sensorlabels, sensorvalues }
-            console.log(sensordata)
+            const sensordata = { uuid, userId, name, bundleId, timestamp, milliseconds, sensorlabels, sensorvalues }
             const response = await api.insertReading(sensordata)
             if (response.status == 201)
             {
@@ -237,12 +266,37 @@ const DropboxView = (callback) => {
         callback.onBack()
     }
 
+    const handleChangeBundleName = event => {
+        setBundleName(event.target.value)
+    }
+
+    const handleSendToBundle = async () => {
+        setPreviewView(true)     
+        setShowBundleForm(true)
+        setShowButtons(false)
+        document.getElementById("dropbox-container").style.cursor = "default";
+    }
+
     return (
         <>
         <motion.div
             initial = {{ opacity: 1, y: 0 }}
             animate = {{ opacity: dismiss ? 0 : 1, y: dismiss ? 500 : 0 }}
-            transition = {{ duration: 0.4 }}>    
+            transition = {{ duration: 0.4 }}>  
+            { previewView ?
+                <motion.div
+                    initial = {{ opacity: 0 }}
+                    animate = {{ opacity: previewView ? 1 : 0 }}
+                    transition = {{ delay: 0.5, duration: 0.6}}>
+                    { renderChart ? 
+                    <ReadingChart
+                        labels={labels} 
+                        milliseconds={milliSeconds} 
+                        values={values}
+                        className={styles.PreviewChart}/>
+                    : null }
+                </motion.div> 
+            : null }  
             <motion.div
                 initial = {{ opacity: 0 }}
                 animate = {{ opacity: 1 }}
@@ -258,14 +312,15 @@ const DropboxView = (callback) => {
                 animate = {{ opacity: 1, x: previewView ? "-45%" : 0, y: previewView ? -90 : 0, scale: previewView ? 1 : 1 }}
                 transition = {{ duration: 0.4 }}> 
                 <DropboxRow>
-                    <DropboxContainer onMouseOver={handleMouseOver} onMouseOut={handleMouseOut} onClick={handleDropboxClick}>
+                    <DropboxContainer id="dropbox-container" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut} onClick={handleDropboxClick}>
                         { !previewView ?
                         <DropboxChooser
                             appKey={APP_KEY}
                             success={handleSuccess}
                             cancel={() => console.log("closed")}
                             multiselect={false}
-                            extensions={[".csv"]}>
+                            extensions={[".csv"]}
+                            disabled={previewView}>
                             <motion.div
                                 initial = {{ opacity: 1 }}
                                 animate = {{ opacity: previewView ? 0 : 1, scale: mouseOver && !previewView ? 1.2 : 1}}
@@ -292,14 +347,39 @@ const DropboxView = (callback) => {
                                     PREVIEW
                                 </ActionButton>
                             </motion.div>
-                            <motion.div
-                                initial = {{ opacity: 0, x: 100}}
-                                animate = {{ opacity: showButtons ? 1 : 0, x: showButtons ? 0 : 100, y: previewView ? -50 : 0 }}
-                                transition = {{ duration: 0.4 }}>
-                                <ActionButton onClick={handleSendClick}>
-                                    SEND
-                                </ActionButton>
-                        </motion.div>
+                            { showBundleForm ?
+                            <>
+                                <p className={styles.BundleFileLabel}>Bundle:</p>
+                                <InputText type="text" value={bundleName} onChange={handleChangeBundleName} className={styles.TypeLabel} />
+                                <motion.div
+                                    initial = {{ opacity: 0, x: 100}}
+                                    animate = {{ opacity: sendWithBundle ? 1 : 0, x: sendWithBundle ? 0 : 100 }}
+                                    transition = {{ duration: 0.4 }}>
+                                    <ActionButton id="test-send-button" onClick={handleSendClick}>
+                                        SEND
+                                    </ActionButton>
+                                </motion.div>
+                            </>
+                            : 
+                            <>
+                                <motion.div
+                                    initial = {{ opacity: 0, x: 100}}
+                                    animate = {{ opacity: showButtons ? 1 : 0, x: showButtons ? 0 : -500, y: previewView ? -50 : 0 }}
+                                    transition = {{ duration: 0.4 }}>
+                                    <ActionButton onClick={handleSendClick}>
+                                        SEND AS SINGLE
+                                    </ActionButton>
+                                </motion.div>
+                                <motion.div
+                                    initial = {{ opacity: 0, x: 100}}
+                                    animate = {{ opacity: showButtons ? 1 : 0, x: showButtons ? 0 : -500, y: previewView ? -50 : 0 }}
+                                    transition = {{ duration: 0.4 }}>
+                                    <ActionButton onClick={handleSendToBundle}>
+                                        SEND TO BUNDLE
+                                    </ActionButton>
+                                </motion.div>
+                            </>
+                            }
                     </DropboxFile>
                 </DropboxRow>
             </motion.div>
@@ -361,18 +441,6 @@ const DropboxView = (callback) => {
             <>
             { width > breakpoint ?
             <>
-            <motion.div
-                initial = {{ opacity: 0, y: -330, x: 300}}
-                animate = {{ opacity: previewView ? 1 : 0, x: previewView ? 0 : 300 }}
-                transition = {{ delay: 0.5, duration: 0.6}}>
-                { renderChart ? 
-                <ReadingChart
-                    labels={labels} 
-                    milliseconds={milliSeconds} 
-                    values={values}
-                    className={styles.PreviewChart}/>
-                : null }
-            </motion.div> 
             <motion.div
                 initial = {{ opacity: 0, y: 200}}
                 animate = {{ opacity: previewView ? 1 : 0, y: previewView ? 0 : 200 }}

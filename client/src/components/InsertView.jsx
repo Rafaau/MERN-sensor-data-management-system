@@ -21,12 +21,16 @@ import api from "../api"
 import { v4 as uuidv4 } from "uuid"
 import { useSnackbar } from "react-simple-snackbar"
 import Options from "../style/options.js"
+import axios from "axios"
 
 const InsertView = (callback) => {
     const didMount = useRef(true)
     const [readingName, setReadingName] = useState("")
+    const [bundleName, setBundleName] = useState("")
     const [showButtons, setShowButtons] = useState(false)
+    const [sendWithBundle, setSendWithBundle] = useState(false)
     const [previewView, setPreviewView] = useState(false)
+    const [showBundleForm, setShowBundleForm] = useState(false)
     const [labelCount, setLabelCount] = useState(1)
     const [rowsCount, setRowsCount] = useState(2)
     const [timestamps, setTimestamps] = useState([])
@@ -63,10 +67,18 @@ const InsertView = (callback) => {
             && values[0][0]
             && values[0][1]
             && readingName) {
-                setShowButtons(true)
-            }
-        else {
+                if (showBundleForm)
+                {
+                    if (bundleName)
+                        setSendWithBundle(true)
+                    else
+                        setSendWithBundle(false)
+                } else {
+                    setShowButtons(true)
+                }                 
+            } else {
             setShowButtons(false)
+            setSendWithBundle(false)
         }
     }, [renderChart])
 
@@ -128,16 +140,45 @@ const InsertView = (callback) => {
         setPreviewView(true)
     }
 
+    const handleChangeBundleName = event => {
+        setBundleName(event.target.value)
+        setRenderChart(false)
+    }
+
+    const handleSendByBundle = () => {
+        setShowButtons(false)
+        setShowBundleForm(true)
+    }
 
     const handleSendClick = async () => {
+        const userModel = JSON.parse(localStorage.getItem("userModel"))
+        const userId = userModel._id
+        let bundleId = 0
+        if (sendWithBundle) {
+            let getResponse = { status: "" }
+            try {
+                getResponse = await api.getBundleByName(bundleName)
+            } catch (err) {
+                
+            } finally {
+                if (getResponse.status == 200) {
+                    bundleId = getResponse.data.data._id
+                } else {
+                    let name = bundleName
+                    const groupId = 0
+                    var bundle = { name, userId, groupId }
+                    var createResponse = await api.createBundle(bundle)
+                    if (createResponse.status == 201)
+                    bundleId = createResponse.data.id
+                }
+            }
+        }
         console.log("started")
         let sensorlabels = labels[0]+","+labels[1]+","+labels[2]
         sensorlabels = sensorlabels.replace("undefined", "")
         sensorlabels = sensorlabels.replace("undefined", "")
         const uuid = uuidv4()
-        const name = readingName
-        const userModel = JSON.parse(localStorage.getItem("userModel"))
-        const userId = userModel._id
+        let name = readingName
         let successes = 0;
         for (let i = 0; i < rowsCount; i++)
         {
@@ -145,12 +186,9 @@ const InsertView = (callback) => {
             sensorvalues = sensorvalues.replace("undefined", "")
             sensorvalues = sensorvalues.replace("undefined", "")
             const timestamp = timestamps[i]
-            console.log(timestamp)
             const milliseconds = milliSeconds[i]
-            console.log(milliseconds)
-            console.log(sensorvalues)
-            const sensordata = { uuid, userId, name, timestamp, milliseconds, sensorlabels, sensorvalues }
-            console.log(sensordata)
+            const sensordata = { uuid, userId, name, bundleId, timestamp, milliseconds, sensorlabels, sensorvalues }
+
             const response = await api.insertReading(sensordata)
             if (response.status == 201)
             {
@@ -192,6 +230,22 @@ const InsertView = (callback) => {
                         <InsertNameContainer>
                         <p>Name: </p>
                         <InputText id="test-insert-name" type="text" value={readingName.readingName} onChange={handleChangeInputName} className={styles.TypeLabel}/>
+                        { showBundleForm ?
+                        <>
+                            <p className={styles.BundleLabel}>Bundle:</p>
+                            <InputText type="text" value={bundleName} onChange={handleChangeBundleName} className={styles.TypeLabel} />
+                            { sendWithBundle ?
+                                <motion.div
+                                    initial = {{ opacity: 0, x: 100}}
+                                    animate = {{ opacity: sendWithBundle ? 1 : 0, x: sendWithBundle ? 0 : 100 }}
+                                    transition = {{ duration: 0.4 }}>                    
+                                    <ActionButton onClick={handleSendClick}>
+                                        SEND
+                                    </ActionButton>
+                                </motion.div>
+                            : null }
+                        </>
+                        : null }
                             { showButtons ?
                             <>
                             <motion.div
@@ -207,7 +261,15 @@ const InsertView = (callback) => {
                                 animate = {{ opacity: showButtons ? 1 : 0, x: showButtons ? 0 : 100, y: previewView ? -50 : 0 }}
                                 transition = {{ duration: 0.4 }}>
                                 <ActionButton id="test-send-button" onClick={handleSendClick}>
-                                    SEND
+                                    SEND AS SINGLE
+                                </ActionButton>
+                            </motion.div>
+                            <motion.div
+                                initial = {{ opacity: 0, x: 100}}
+                                animate = {{ opacity: showButtons ? 1 : 0, x: showButtons ? 0 : 100, y: previewView ? -50 : 0 }}
+                                transition = {{ duration: 0.4 }}>
+                                <ActionButton onClick={handleSendByBundle}>
+                                    SEND TO BUNDLE
                                 </ActionButton>
                             </motion.div>
                             </> : null }

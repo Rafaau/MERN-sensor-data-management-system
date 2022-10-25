@@ -268,6 +268,24 @@ const AddButton = styled.button.attrs({
     }
 `
 
+const AddGroupButton = styled.button.attrs({
+    className: "fa-solid fa-plus add-button"
+})` 
+    font-size: 24px;
+    position: absolute;
+    right: 2vw;
+    background-color: white;
+    width: 28px;
+    height: 28px;
+    color: #ff5900;
+    border: none;
+    border-radius: 5px;
+    transition: 0.2s;
+    &:hover {
+        transform: scale(1.3)
+    }
+`
+
 const AddRowButton = styled.button.attrs({
     className: "fa-solid fa-plus add-button"
 })` 
@@ -288,6 +306,25 @@ const AddRowButton = styled.button.attrs({
 
 const RemoveButton = styled.button.attrs({
     className: "fa-solid fa-trash-can add-button", type: "button"
+})` 
+    font-size: 16px;
+    background-color: white;
+    width: 28px;
+    height: 28px;
+    color: #ff5900;
+    padding: 0;
+    border: none;
+    border-radius: 5px;
+    margin-right: 5px;
+    transition: 0.2s;
+    float: right;
+    &:hover {
+        transform: scale(1.3)
+    }
+`
+
+const MoveButton = styled.button.attrs({
+    className: "fa-solid fa-arrow-right-arrow-left", type: "button"
 })` 
     font-size: 16px;
     background-color: white;
@@ -326,6 +363,28 @@ const RemoveRowButton = styled.button.attrs({
 
 const DownloadFileButton = styled.button.attrs({
     className: "fa-solid fa-download add-button"
+})` 
+    border: 1px solid #ff5900;
+    font-size: 15px;
+    position: relative;
+    top: 5px;
+    background-color: white;
+    width: auto;
+    height: 28px;
+    color: #ff5900;
+    padding-inline: 5px;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    float: right;
+    transition: 0.2s;
+    &:hover, focus {
+        box-shadow: inset 0 -3.25em 0 0 #ff5900;
+        color: white;
+    }
+`
+
+const FilterButton = styled.button.attrs({
+
 })` 
     border: 1px solid #ff5900;
     font-size: 15px;
@@ -456,7 +515,7 @@ const ViewSpan = styled.div.attrs({
 
 })`
     text-align: center;
-    background-color: white;
+    background-color: rgba(0,0,0,0);
     margin: 0;
     width: 100%;
     color: #7E7E7E;
@@ -513,9 +572,9 @@ const PcFileSpanIcon = styled.span.attrs({
     width: 30%;
     background-color: white;
     color: #ff5900;
-    filter: drop-shadow(3px 3px 0 white) 
-    drop-shadow(-3px -3px 0 white);
-    font-size: 4vw;
+    filter: drop-shadow(5px 5px 0 white) 
+    drop-shadow(-5px -5px 0 white);
+    font-size: 5vw;
 `
 
 const DropboxIcon = styled.button.attrs({
@@ -654,7 +713,7 @@ const FileContainer = styled.label.attrs({
 const PcIcon = styled.span.attrs({
     className: "fa-sharp fa-solid fa-desktop"
 })`
-    font-size: 7vw;
+    font-size: 8vw;
     color: #ff5900; 
 `
 
@@ -891,7 +950,7 @@ const NavElement = styled.div.attrs({
     justify-content: center;
     display: flex;
     position: relative;
-    width: 30%;
+    width: 22%;
     text-align: center;
     padding-top: 1%;
     color: #4F4F4F;
@@ -905,6 +964,14 @@ const NavChartIcon = styled.div.attrs({
     padding-top: 1%;
     padding-right: 2%;
 `
+
+const NavStreamIcon = styled.div.attrs({
+    className: "fa-solid fa-satellite-dish"
+})`
+    padding-top: 1%;
+    padding-right: 2%;
+`
+
 
 const NavListIcon = styled.div.attrs({
     className: "fa-solid fa-list"
@@ -1134,32 +1201,32 @@ const TableFooter = styled.div.attrs({
 
 })`
     width: 100%;
-    position: absolute;
-    bottom: -6vh;
+    position: relative;
     display: flex;
     justify-content: center;
-    padding-bottom: 1vh;
+    padding-bottom: 2vh;
+    padding-top: 2vh;
 `
 
 const PreviousPage = styled.div.attrs({
     className: "fa-solid fa-arrow-left"
 })`
+    margin-left: 2vw;
     color: #7e7e7e;
     font-size: 1.6vw;
-    width: 5%;
-    text-align: right;
-    padding-right: 2vw;
+    text-align: left;
+    width: 100%;
     cursor: pointer;
 `
 
 const NextPage = styled.div.attrs({
     className: "fa-solid fa-arrow-right"
 })`
+    margin-right: 2vw;
     color: #7e7e7e;
     font-size: 1.6vw;
-    width: 5%;
-    text-align: left;
-    padding-left: 2vw;
+    width: 100%;
+    text-align: right;
     cursor: pointer;
 `
 
@@ -1292,6 +1359,210 @@ const JsonTextArea = styled.textarea.attrs({
     resize: none;
 `
 
+const GroupListLabel = styled.div.attrs({
+
+})`
+    padding: 1vw;
+    padding-inline: 2vw;
+    font-weight: bold;
+    font-family: Trebuchet MS, sans-serif;
+    color: #7e7e7e;
+    background-color: #F0F0F0;
+    font-size: 1.3vw;
+    -webkit-box-shadow: 0px 2px 9px -3px rgba(66, 68, 90, 1);
+    -moz-box-shadow: 0px 2px 9px -3px rgba(66, 68, 90, 1);
+    box-shadow: 0px 2px 9px -3px rgba(66, 68, 90, 1);
+    margin-top: 0.3vh;
+    margin-bottom: 1vh;
+`
+
+const EmptyList = styled.div.attrs({
+
+})`
+    font-weight: bold;
+    font-family: Trebuchet MS, sans-serif;
+    color: #7e7e7e;
+    text-align: center;
+    padding: 2vw;
+    font-size: 1.5vw;
+`
+
+const ExpandIcon = styled.div.attrs({
+    className: "fa-solid fa-chevron-down"
+})`
+    float: right;
+    padding-top: 0.1vw;
+    font-size: 1.8vw;
+    cursor: pointer;
+`
+
+const DeleteGray = styled.div.attrs({
+    className: "fa-solid fa-trash-can"
+})`
+    float: right;
+    padding-top: 0.5vw;
+    padding-right: 1.5vw;
+    font-size: 1.3vw;
+    cursor: pointer;
+    transition: 0.2s;
+    &:hover {
+        transform: scale(1.2);
+        padding-top: 0.3vw;
+        padding-right: 1.3vw;
+    }
+`
+
+const CollapseIcon = styled.div.attrs({
+    className: "fa-solid fa-chevron-up"
+})`
+    float: right;
+    padding-top: 0.1vw;
+    font-size: 1.8vw;
+    cursor: pointer;
+`
+
+const Flex = styled.div.attrs({
+
+})`
+    display: flex;
+`
+
+const TaskTab = styled.div.attrs({
+
+})`
+    padding: 1vw;
+    width: 100%;
+    height: auto;
+    margin-right: 5vw;
+    margin-bottom: 2vw;
+    font-family: Trebuchet MS, sans-serif;
+    color: #7e7e7e;
+    background-color: #F0F0F0;
+    -webkit-box-shadow: 0px 2px 9px -3px rgba(66, 68, 90, 1);
+    -moz-box-shadow: 0px 2px 9px -3px rgba(66, 68, 90, 1);
+    box-shadow: 0px 2px 9px -3px rgba(66, 68, 90, 1);
+    transition: 0.2s;
+    cursor: pointer;
+    &:hover {
+        transform: scale(1.1);
+    }
+`
+
+const TaskContainer = styled.div.attrs({
+
+})`
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    width: 100%;
+`
+
+const TaskLabel = styled.div.attrs({
+
+})`
+    font-weight: bold;
+    font-size: 2vw;
+`
+
+const SensorUl = styled.div.attrs({
+
+})`
+    font-size: 1.4vw;
+`
+
+const SensorLi = styled.div.attrs({
+
+})`
+    font-size: 1.1vw;
+    padding-left: 0.5vw;
+`
+
+const TaskDateLabel = styled.div.attrs({
+
+})`
+    font-size: 1.4vw;
+    text-align: right;
+    font-weight: bold;
+    color: #7e7e7e;
+`
+
+const TaskDate = styled.div.attrs({
+
+})`
+    font-size: 1.1vw;
+    text-align: right;
+`
+
+const TaskReadingTab = styled.div.attrs({
+
+})`
+    margin-bottom: 2vh;
+    padding: 1vw;
+    width: 100%;
+    height: auto;
+    font-family: Trebuchet MS, sans-serif;
+    color: #7e7e7e;
+    background-color: #F0F0F0;
+    -webkit-box-shadow: 0px 2px 9px -3px rgba(66, 68, 90, 1);
+    -moz-box-shadow: 0px 2px 9px -3px rgba(66, 68, 90, 1);
+    box-shadow: 0px 2px 9px -3px rgba(66, 68, 90, 1);
+    cursor: pointer;
+    transition: 0.2s;
+    &:hover {
+        background-color: #E8E8E8;
+        font-weight: bold;
+    }
+`
+
+const TaskHeader = styled.div.attrs({
+
+})`
+    font-family: Trebuchet MS, sans-serif;
+    font-size: 2.5vw;
+    font-weight: bold;
+    color: #4F4F4F;
+`
+
+const TaskUpper = styled.div.attrs({
+
+})`
+    padding: 2vw;
+    display: flex;
+`
+
+const SolutionButton = styled.div.attrs({
+    className: "fa-solid fa-circle-question"
+})`
+    font-size: 2.5vw;
+    color: #7e7e7e;
+    position: absolute;
+    top: 0;
+    right: 0;
+    transition: 0.2s;
+    cursor: pointer;
+    &:hover {
+        transform: scale(1.2);
+    }
+`
+
+const SolutionStep = styled.div.attrs({
+
+})`
+    margin-bottom: 5vw;
+    width: 100%;
+    padding-inline: 2%;
+    display: flex;
+`
+
+const SolutionStepDescription = styled.div.attrs({
+
+})`
+    font-family: Trebuchet MS, sans-serif;
+    font-weight: bold;
+    color: #4F4F4F;
+    font-size: 1.3vw;
+`
+
 export { 
     UpperContainer, 
     UpperNav, 
@@ -1406,6 +1677,29 @@ export {
     JsonRow,
     JsonInfoButton, 
     JsonInfo,
-    JsonIcon,}
+    JsonIcon,
+    GroupListLabel,
+    ExpandIcon,
+    CollapseIcon,
+    MoveButton,
+    Flex,
+    AddGroupButton,
+    EmptyList,
+    DeleteGray,
+    NavStreamIcon,
+    TaskTab,
+    TaskLabel,
+    SensorLi,
+    SensorUl,
+    TaskDate,
+    TaskDateLabel,
+    TaskReadingTab,
+    TaskHeader,
+    TaskUpper,
+    FilterButton,
+    SolutionButton,
+    TaskContainer,
+    SolutionStep,
+    SolutionStepDescription,}
 
 

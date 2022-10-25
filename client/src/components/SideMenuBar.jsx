@@ -20,7 +20,6 @@ function SideMenuBar() {
         async function getSensorDatas() {
             setupUser()
             const userModel = JSON.parse(localStorage.getItem("userModel"))
-            console.log(userModel)
             let response = { status: ""}
             try {
                 response = await api.getReadingByUserId(userModel._id)
@@ -30,7 +29,7 @@ function SideMenuBar() {
             } finally {
                 if (response.status == 200) {
                     localStorage.setItem("numberOfArrays", JSON.stringify(response.data.data.length))
-                    console.log(JSON.parse(localStorage.getItem("numberOfArrays")))
+                    //console.log(JSON.parse(localStorage.getItem("numberOfArrays")))
                     if (JSON.parse(localStorage.getItem("numberOfArrays")) > 50000)
                         localStorage.setItem("isBlocked", true)
                     else
@@ -51,7 +50,6 @@ function SideMenuBar() {
 
     const setupUser = () => {
         const loggedInUser = localStorage.getItem("user")
-        console.log(loggedInUser)
         if (loggedInUser) {
             const foundUser = loggedInUser
             setUser(JSON.parse(foundUser))

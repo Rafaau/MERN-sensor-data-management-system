@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react"
 
 import styles from "../style/site.module.css"
 import { 
+    InputText,
     InputFile, 
     ActionButton, 
     PcFileSpanIcon, 
@@ -30,11 +31,14 @@ const FileView = (callback) => {
     const [helper, invokeHelper] = useState(false)
     const [mouseOver, setMouseOver] = useState(false)
     const [file, setFile] = useState()
+    const [bundleName, setBundleName] = useState("")
     const [fileName, setFileName] = useState("NO FILE CHOSEN")
+    const [sendWithBundle, setSendWithBundle] = useState(false)
     const [showButtons, setShowButtons] = useState(false)
     const [previewView, setPreviewView] = useState(false)
     const [labelCount, setLabelCount] = useState(1)
     const [rowsCount, setRowsCount] = useState(2)
+    const [showBundleForm, setShowBundleForm] = useState(false)
     const [timestamps, setTimestamps] = useState([])
     const [milliSeconds, setMilliseconds] = useState([])
     const [sensorLabels, setSensorLabels] = useState([])
@@ -61,6 +65,8 @@ const FileView = (callback) => {
 
     useEffect(() => {
         setRenderChart(true)
+
+
     }, [renderChart])
 
     useEffect(() => {
@@ -70,10 +76,21 @@ const FileView = (callback) => {
         return () => window.removeEventListener("resize", handleWindowResize)
     }, [])
 
+    useEffect(() => {
+        if (bundleName)
+            setSendWithBundle(true)
+        else
+            setSendWithBundle(false)
+    }, [bundleName])
+
     const joinSensorValues = (number) => {
         sensorValues[number] = sensorValue1[number]+","+sensorValue2[number]+","+sensorValue3[number]
         sensorValues[number] = sensorValues[number].replace("undefined", "")
         sensorValues[number] = sensorValues[number].replace("undefined", "")
+    }
+
+    const handleChangeBundleName = event => {
+        setBundleName(event.target.value)
     }
 
     const handleInputFile = e => {
@@ -101,12 +118,19 @@ const FileView = (callback) => {
                 for (let i = 0; i < csvRows.length - 1; i++) {
                     timestamps[i] = csvRows[i].split(",")[0]
                     milliSeconds[i] = parseFloat(csvRows[i].split(",")[1]).toFixed(2)
-                    sensorValue1[i] = csvRows[i].split(",")[2]
-                    sensorValue2[i] = csvRows[i].split(",")[3]
-                    sensorValue3[i] = csvRows[i].split(",")[4]
+                    sensorValue1[i] = csvRows[i].split(",")[2].replace(/[^\d.-]/g, "")
+                    if (csvRows[i].split(",")[3] != undefined)
+                        sensorValue2[i] = csvRows[i].split(",")[3].replace(/[^\d.-]/g, "")
+                    if (csvRows[i].split(",")[4] != undefined)
+                        sensorValue3[i] = csvRows[i].split(",")[4].replace(/[^\d.-]/g, "")
                     joinSensorValues(i)
                 }
-                setSensorLabels({...sensorLabels, 0: csvHeader[2], 1: csvHeader[3], 2: csvHeader[4]})
+                console.log(csvHeader[2])
+                setSensorLabels({...sensorLabels, 0: csvHeader[2]})
+                if (csvHeader[3] != undefined || csvHeader[3] != "")
+                    setSensorLabels({...sensorLabels, 0: csvHeader[2], 1: csvHeader[3]})
+                if (csvHeader[4] != undefined || csvHeader[4] != "")
+                    setSensorLabels({...sensorLabels, 0: csvHeader[2], 1: csvHeader[3], 2: csvHeader[4]})
                 const name = file.name.toString().slice(0, file.name.indexOf("."))
                 setName({...name, name: name})
                 invokeHelper(true)
@@ -142,6 +166,13 @@ const FileView = (callback) => {
 
     const handlePreviewClick = () => {
         setPreviewView(true)
+    }
+
+    const handleSendToBundle = async () => {
+        setPreviewView(true)     
+        setShowBundleForm(true)
+        setShowButtons(false)
+        document.getElementById("file-container").style.cursor = "default";
     }
 
     const handleSensorValue1Change = (event, number) => {
@@ -181,6 +212,28 @@ const FileView = (callback) => {
     }
 
     const handleSendClick = async () => {
+        const userModel = JSON.parse(localStorage.getItem("userModel"))
+        const userId = userModel._id
+        let bundleId = 0
+        if (sendWithBundle) {
+            let getResponse = { status: "" }
+            try {
+                getResponse = await api.getBundleByName(bundleName)
+            } catch (err) {
+                
+            } finally {
+                if (getResponse.status == 200) {
+                    bundleId = getResponse.data.data._id
+                } else {
+                    let name = bundleName
+                    const groupId = 0
+                    var bundle = { name, userId, groupId }
+                    var createResponse = await api.createBundle(bundle)
+                    if (createResponse.status == 201)
+                    bundleId = createResponse.data.id
+                }
+            }
+        }
         setLoading(true)
         setShowButtons(false)
         console.log("started")
@@ -190,19 +243,13 @@ const FileView = (callback) => {
         sensorlabels = sensorlabels.replace("undefined", "")
         const uuid = uuidv4()
         const name = fileName
-        const userModel = JSON.parse(localStorage.getItem("userModel"))
-        const userId = userModel._id
         let successes = 0;
         for (let i = 0; i < rowsCount; i++)
         {
             const timestamp = timestamps[i]
-            console.log(timestamp)
             const milliseconds = milliSeconds[i]
-            console.log(milliseconds)
             const sensorvalues = sensorValues[i]
-            console.log(sensorvalues)
-            const sensordata = { uuid, userId, name, timestamp, milliseconds, sensorlabels, sensorvalues }
-            console.log(sensordata)
+            const sensordata = { uuid, userId, name, bundleId, timestamp, milliseconds, sensorlabels, sensorvalues }
             const response = await api.insertReading(sensordata)
             if (response.status == 201)
             {
@@ -227,6 +274,20 @@ const FileView = (callback) => {
             initial = {{ opacity: 1, y: 0 }}
             animate = {{ opacity: dismiss ? 0 : 1, y: dismiss ? 500 : 0 }}
             transition = {{ duration: 0.4 }}> 
+            { previewView ?
+                <motion.div
+                    initial = {{ opacity: 0 }}
+                    animate = {{ opacity: previewView ? 1 : 0 }}
+                    transition = {{ delay: 0.5, duration: 0.6}}>
+                    { renderChart ? 
+                    <ReadingChart
+                        labels={labels} 
+                        milliseconds={milliSeconds} 
+                        values={values}
+                        className={styles.PreviewChart}/>
+                    : null }
+                </motion.div> 
+            : null }
             <motion.div
                 initial = {{ opacity: 0 }}
                 animate = {{ opacity: 1 }}
@@ -239,21 +300,22 @@ const FileView = (callback) => {
             <>
             <motion.div
                 initial = {{ opacity: 0, x: 300}}
-                animate = {{ opacity: 1, x: previewView ? -400 : 0, y: previewView ? -90 : 0 }}
+                animate = {{ opacity: 1, x: previewView ? "-45%" : 0, y: previewView ? -90 : 0 }}
                 transition = {{ duration: 0.4 }}>
-                <FileRow>
-                    <FileContainer onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
-                        <InputFile id="test-input-file" onChange={handleInputFile}/>
+                <FileRow>                   
+                    <FileContainer id="file-container" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}> 
+                        <InputFile disabled={previewView} id="test-input-file" onChange={handleInputFile}/>
                         <motion.div
                             initial = {{ opacity: 0, x: 300}}
-                            animate = {{ opacity: previewView ? 0: 1, x: previewView ? -200 : 0 }}
+                            animate = {{ opacity: previewView ? 0: 1, x: previewView ? -600 : 0 }}
                             transition = {{ duration: 0.4 }}>
                             <PcIcon/>
                         </motion.div>
                         <motion.div
-                            initial = {{ opacity: 0, x: 300, y: -120, scale: 1.2 }}
-                            animate = {{ opacity: previewView ? 0: 1, x: 90, y: mouseOver ? -140 : -130, scale: 1.2 }}
-                            transition = {{ duration: 0.2 }}>
+                            initial = {{ opacity: 0, x: 300, y: -120 }}
+                            animate = {{ opacity: previewView ? 0: 1, x: previewView ? -500 : 90, y: mouseOver ? -140 : -130 }}
+                            transition = {{ duration: 0.2 }}
+                            style = {{width: "10%"}}>
                             <PcFileSpanIcon/>
                         </motion.div>
                     </FileContainer>
@@ -262,20 +324,47 @@ const FileView = (callback) => {
                         { loading ? <Loading/> : null}
                         <motion.div
                             initial = {{ opacity: 0, x: 100}}
-                            animate = {{ opacity: showButtons && !previewView ? 1 : 0, x: showButtons ? 0 : 100 }}
+                            animate = {{ opacity: showButtons && !previewView ? 1 : 0, x: showButtons ? 0 : -500 }}
                             transition = {{ duration: 0.4 }}>                    
                             <ActionButton id="test-preview-button" onClick={handlePreviewClick}>
                                 PREVIEW
                             </ActionButton>
                         </motion.div>
-                        <motion.div
-                            initial = {{ opacity: 0, x: 100}}
-                            animate = {{ opacity: showButtons ? 1 : 0, x: showButtons ? 0 : 100, y: previewView ? -50 : 0 }}
-                            transition = {{ duration: 0.4 }}>
-                            <ActionButton id="test-send-button" onClick={handleSendClick}>
-                                SEND
-                            </ActionButton>
-                        </motion.div>
+                        { showBundleForm ?
+                        <>
+                            <p className={styles.BundleFileLabel}>Bundle:</p>
+                            <InputText type="text" value={bundleName} onChange={handleChangeBundleName} className={styles.TypeLabel} />
+                            { sendWithBundle ?
+                            <motion.div
+                                initial = {{ opacity: 0, x: 100}}
+                                animate = {{ opacity: sendWithBundle ? 1 : 0, x: sendWithBundle ? 0 : 100 }}
+                                transition = {{ duration: 0.4 }}>
+                                <ActionButton id="test-send-button" onClick={handleSendClick}>
+                                    SEND
+                                </ActionButton>
+                            </motion.div>
+                            : null }
+                        </>
+                        : 
+                        <>
+                            <motion.div
+                                initial = {{ opacity: 0, x: 100}}
+                                animate = {{ opacity: showButtons ? 1 : 0, x: showButtons ? 0 : 100, y: previewView ? -50 : 0 }}
+                                transition = {{ duration: 0.4 }}>
+                                <ActionButton id="test-send-button" onClick={handleSendClick}>
+                                    SEND AS SINGLE
+                                </ActionButton>
+                            </motion.div>
+                            <motion.div
+                                initial = {{ opacity: 0, x: 100}}
+                                animate = {{ opacity: showButtons ? 1 : 0, x: showButtons ? 0 : 100, y: previewView ? -50 : 0 }}
+                                transition = {{ duration: 0.4 }}>
+                                <ActionButton id="test-send-button" onClick={handleSendToBundle}>
+                                    SEND TO BUNDLE
+                                </ActionButton>
+                            </motion.div>
+                        </>
+                        }
                     </FileLabel>
                 </FileRow>
             </motion.div>
@@ -329,18 +418,6 @@ const FileView = (callback) => {
                 <>
                 { width > breakpoint ?
                 <>
-                <motion.div
-                    initial = {{ opacity: 0, x: 300, y: -350}}
-                    animate = {{ opacity: previewView ? 1 : 0, x: previewView ? 20 : 300 }}
-                    transition = {{ delay: 0.5, duration: 0.6}}>
-                    { renderChart ? 
-                    <ReadingChart
-                        labels={labels} 
-                        milliseconds={milliSeconds} 
-                        values={values}
-                        className={styles.PreviewChart}/>
-                    : null }
-                </motion.div> 
                 <motion.div
                     initial = {{ opacity: 0, y: 200}}
                     animate = {{ opacity: previewView ? 1 : 0, y: previewView ? 0 : 200 }}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
 
-import { UpperContainer, UpperNav, NavRow, NavLogo, NavElement, NavChartIcon, NavListIcon } from "../style/styled-components"
+import { UpperContainer, UpperNav, NavRow, NavLogo, NavElement, NavChartIcon, NavListIcon, NavStreamIcon } from "../style/styled-components"
 import { motion } from "framer-motion"
 import styles from "../style/site.module.css"
 import logo from "../style/images/logo.png"
@@ -93,6 +93,21 @@ function UpperNavBar() {
                                 transition = {{ duration: 0.1 }}>
                                 <NavChartIcon/>
                                 <Link to="/sensordata/insert" id="test-insert-link" className="nav-link" onClick={invokeStateChange}>Insert new reading</Link>
+                            </motion.div>
+                        </NavElement>
+                        <NavElement>
+                            <motion.div 
+                                className = {styles.Underline}
+                                initial = {{ opacity: 0 }}
+                                animate = {{ opacity: currentPage == "/sensordata/collector" ? 1 : 0, x: currentPage == "/sensordata/list" ? -600 : currentPage == "/sensordata/insert" ? -400 : currentPage == "/" ? -800 : 0 }}
+                                transition = {{ duration: 0.2 }}>
+                            </motion.div>
+                            <motion.div
+                                className = {styles.FlexFix}
+                                animate = {{ "color": currentPage == "/sensordata/collector" ? "#ff5900" : "#4F4F4F" }}
+                                transition = {{ duration: 0.1 }}>
+                                <NavStreamIcon/>
+                                <Link to="/sensordata/collector" id="test-insert-link" className="nav-link" onClick={invokeStateChange}>Data Collector</Link>
                             </motion.div>
                         </NavElement>
                 </NavRow>
