@@ -123,7 +123,7 @@ deleteReadingByBundleId = async (req, res) => {
             return res.status(404).json({ success: false, error: "Readings not found" })
         }
 
-        return res.status(200).json({ success: true, data: sensordata })
+        return res.status(200).json({ success: true, message: "Readings deleted" })
     }).catch(err => console.log(err))
 }
 
@@ -170,6 +170,7 @@ readFile = async (req, res) => {
 
 streamDataToDb = async (req, res) => {
     const body = req.body
+    console.log(req)
 
     if (!body) {
         return res
@@ -190,9 +191,10 @@ streamDataToDb = async (req, res) => {
         const sensorlabels = Object.keys(sensor)[1]+","+(Object.keys(sensor)[2] == undefined ? "" : Object.keys(sensor)[2])+","+(Object.keys(sensor)[3] == undefined ? "" : Object.keys(sensor)[3])
         const sensorvalues = sensor.value0+","+(sensor.value1 == undefined ? "" : sensor.value1)+","+(sensor.value2 == undefined ? "" : sensor.value2)
         const task = body.task
+        const isShared = false
 
-        const sensordata = { uuid, userId, name, bundleId, timestamp, milliseconds, sensorlabels, sensorvalues, task }
-        console.log(sensordata)
+        const sensordata = { uuid, userId, name, bundleId, timestamp, milliseconds, sensorlabels, sensorvalues, task, isShared }
+        //console.log(sensordata)
 
         const sensorData = new SensorData(sensordata)
 
@@ -269,6 +271,68 @@ getReadingsByTaskAndName = async (req, res) => {
     }).catch(err => console.log(err))
 }
 
+shareTaskByName = async (req, res) => {
+    let share
+    await SensorData.findOne({ task: req.params.name }, (err, reading) => {
+        if (err) {
+            return res
+                .status(400)
+        }
+        if (!reading) {
+            return res
+                .status(404)
+        }
+        
+        share = reading.isShared
+    }).clone()
+
+    await SensorData.updateMany({ task: req.params.name }, { isShared: !share })
+    .then(() => {
+        return res
+            .status(200)
+            .json({ success: true, message: "Share status updated" })
+    })
+}
+
+getSharedTasks = async (req, res) => {
+    await SensorData.find({ isShared: true }, (err, tasks) => {
+        if (err) {
+            return res
+                .status(400)
+                .json({ success: false, error: err })
+        }
+        if (!tasks.length) {
+            return res
+                .status(404)
+                .json({ success: false, error: "No shared tasks" })
+        }
+
+        return res
+            .status(200)
+            .json({ success: true, data: tasks })
+    }).catch(err => console.log(err))
+}
+
+deleteReadingsByTask = async (req, res) => {
+    await SensorData.deleteMany({ task: req.params.task, userId: req.params.userId }, (err, readings) => {
+        if (err) {
+            return res
+                .status(400)
+                .json({ success: false, error: err })
+        }
+
+        if (!readings) {
+            return res
+                .status(404)
+                .json({ success: false, error: "Readings not found" })
+        }
+
+        return res
+            .status(200)
+            .json({ success: true, message: "Readings deleted" })
+    }).catch(err => console.log(err))
+}
+
 module.exports = {
     createReading,
     getAllReadings,
@@ -282,4 +346,7 @@ module.exports = {
     streamDataToDb,
     getReadingsByTask,
     getReadingsByTaskAndName,
+    shareTaskByName,
+    getSharedTasks,
+    deleteReadingsByTask,
 }

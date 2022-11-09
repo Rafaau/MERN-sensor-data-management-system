@@ -18,6 +18,9 @@ export const getFile = filename => api.get(`/files/${filename}`)
 export const openConnection = () => api.get(`/stream`)
 export const getReadingsByTask = task => api.get(`/task/${task}`)
 export const getReadingsByTaskAndName = (task, name) => api.get(`/task/${task}/${name}`)
+export const shareTaskByName = task => api.put(`/task/${task}`)
+export const getSharedTasks = () => api.get(`tasks/by/shared`)
+export const deleteReadingsByTask = (task, userId) => api.delete(`/task/${task}/${userId}`)
 
 // USER
 export const createUser = user => api.post("/user", user)
@@ -31,6 +34,7 @@ export const getBundleByName = name => api.get(`/bundle/${name}`)
 export const getBundlesByUserId = userId => api.get(`/bundles/${userId}`)
 export const getBundlesByGroupId = groupId => api.get(`/bundles/group/${groupId}`)
 export const getBundleById = id => api.get(`/bundle/id/${id}`)
+export const getSharedBundles = () => api.get(`/bundles/by/shared`)
 export const createBundle = bundle => api.post(`/bundle`, bundle)
 export const updateBundle = (id, bundle) => api.put(`/bundle/${id}`, bundle)
 export const deleteBundle = id => api.delete(`/bundle/${id}`)
@@ -61,6 +65,7 @@ const apis = {
     getBundlesByUserId,
     getBundlesByGroupId,
     getBundleById,
+    getSharedBundles,
     createBundle,
     updateBundle,
     deleteBundle,
@@ -69,6 +74,9 @@ const apis = {
     deleteBundleGroup,
     getReadingsByTask,
     getReadingsByTaskAndName,
+    shareTaskByName,
+    getSharedTasks,
+    deleteReadingsByTask,
 }
 
 export default apis

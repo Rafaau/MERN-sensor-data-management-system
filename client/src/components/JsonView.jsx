@@ -18,7 +18,8 @@ import {
     MobileJsonInfoButton, 
     MobileActionButton,
     MobileValidationMessage,
-    MobileJsonTextArea } from "../style/styled-mobile-components"
+    MobileJsonTextArea, 
+    MobileFileLabel} from "../style/styled-mobile-components"
 import { motion } from "framer-motion"
 import styled from "styled-components"
 import { DataTable, ReadingChart, Loading } from "../components"
@@ -26,6 +27,8 @@ import api from "../api"
 import { v4 as uuidv4 } from "uuid"
 import { useSnackbar } from "react-simple-snackbar"
 import Options from "../style/options.js"
+import Modal from "react-bootstrap/Modal"
+import Select from "react-select"
 
 const JsonView = (callback) => {
     const didMount = useRef(true)
@@ -60,11 +63,30 @@ const JsonView = (callback) => {
     var optionsInstance = new Options()
     const [openSuccessSnackbar, closeSuccessSnackbar] = useSnackbar(optionsInstance.successSnackbarOptions)
     const [openErrorSnackbar, closeErrorSnackbar] = useSnackbar(optionsInstance.errorSnackbarOptions)
+    const [showBundleModal, setShowBundleModal] = useState(false)
+    const [bundleSelect, setBundleSelect] = useState([])
+    const [selectValue, setSelectValue] = useState("")
+    const [readingBundles, setReadingBundles] = useState([])
     const [width, setWidth] = useState(window.innerWidth)
     const breakpoint = 620;
 
     useEffect(() => {
+        async function getReadingBundles() {
+            let response = { status: "" }
+            try {
+                const userModel = JSON.parse(localStorage.getItem("userModel"))
+                response = await api.getBundlesByUserId(userModel._id)
+            } catch (err) {
+                console.log("bundles not found")
+            } finally {
+                if (response.status == 200) {
+                    setReadingBundles(response.data.data)
+                }
+            }
+        }
+
         if (didMount.current) {
+            getReadingBundles()
             didMount.current = false
             return
         }
@@ -187,6 +209,7 @@ const JsonView = (callback) => {
         console.log("done")
         setLoading(false)
         setShowButtons(true)
+        setShowInfoSpan(false)
         console.log("jsooon")
         return true
     }
@@ -202,16 +225,17 @@ const JsonView = (callback) => {
         if (sendWithBundle) {
             let getResponse = { status: "" }
             try {
-                getResponse = await api.getBundleByName(bundleName)
+                getResponse = await api.getBundleByName(selectValue)
             } catch (err) {
                 
             } finally {
-                if (getResponse.status == 200) {
+                if (getResponse.status == 200 && bundleName == "") {
                     bundleId = getResponse.data.data._id
                 } else {
                     let name = bundleName
                     const groupId = 0
-                    var bundle = { name, userId, groupId }
+                    const isShared = false
+                    var bundle = { name, userId, groupId, isShared }
                     var createResponse = await api.createBundle(bundle)
                     if (createResponse.status == 201)
                     bundleId = createResponse.data.id
@@ -268,35 +292,38 @@ const JsonView = (callback) => {
         setShowInfoSpan(false)
     }
 
+    const handleShowBundleModal = () => {
+        setSendWithBundle(true)
+        setShowBundleModal(true)
+        const options = []
+        readingBundles.forEach(bundle => {
+            options.push({ value: bundle._id, label: bundle.name })
+        })
+        setBundleSelect(options)
+    }
+    
+    const handleOnSelectChange = event => {
+        setSelectValue(event.label)
+    }
+
+    const handleCloseBundleModal = () => {
+        setSendWithBundle(false)
+        setShowBundleModal(false)
+    }
+
     return (
         <>
+        { width > breakpoint ?
         <motion.div
             initial = {{ opacity: 1, y: 0 }}
             animate = {{ opacity: dismiss ? 0 : 1, y: dismiss ? 500 : 0 }}
             transition = {{ duration: 0.4 }}> 
-            { previewView ?
-                <motion.div
-                    initial = {{ opacity: 0 }}
-                    animate = {{ opacity: previewView ? 1 : 0 }}
-                    transition = {{ delay: 0.5, duration: 0.6}}>
-                    { renderChart ? 
-                    <ReadingChart
-                        labels={labels} 
-                        milliseconds={milliSeconds} 
-                        values={values}
-                        className={styles.PreviewChart}/>
-                    : null }
-                </motion.div> 
-            : null } 
             <motion.div
                 initial = {{ opacity: 0 }}
                 animate = {{ opacity: 1 }}
                 transition = {{ duration: 0.4 }}> 
-                { width > breakpoint ?
                 <BackButton onClick={handleBackClick}/>
-                : <MobileBackButton onClick={handleBackClick}/> }
             </motion.div>
-            { width > breakpoint ?
             <>
             <motion.div
                 initial = {{ opacity: 0, x: 300}}
@@ -362,7 +389,7 @@ const JsonView = (callback) => {
                                     initial = {{ opacity: 0, x: 100}}
                                     animate = {{ opacity: showButtons ? 1 : 0, x: showButtons ? 0 : -500, y: previewView ? -50 : 0 }}
                                     transition = {{ duration: 0.4 }}>
-                                    <ActionButton onClick={handleSendToBundle}>
+                                    <ActionButton onClick={handleShowBundleModal}>
                                         SEND TO BUNDLE
                                     </ActionButton>
                                 </motion.div>
@@ -381,66 +408,22 @@ const JsonView = (callback) => {
                 </motion.div>
             </motion.div>
             </>
-            :
-            <>
-            <motion.div
-                initial = {{ opacity: 0, x: "0%", y: "-100%" }}
-                animate = {{ opacity: 1, x: previewView ? "10%" : 0 }}
-                transition = {{ duration: 0.4 }}>
-                        <MobileJsonLabel>
-                        {fileName} 
-                        { !showButtons ?
-                        <>
-                            <MobileJsonInfoButton onClick={() => setShowInfo(true)}/>
-                            <motion.div
-                                initial = {{ opacity: 0 }}
-                                animate = {{ opacity: showInfo ? 1 : 0 }}>
-                                <MobileJsonInfo>
-                                    To send the reading correctly, every single JSON object should contain properties in the following order:
-                                    <br/> "name", "timestamp", "milliseconds", "label_1", "label_2" (optional), "label_3" (optional)
-                                </MobileJsonInfo>
-                            </motion.div>
-                        </>
-                        : null }
-                        { loading ? <Loading/> : null}
-                        { showButtons ?
-                        <>
-                        <motion.div
-                            initial = {{ opacity: 0, x: "100%", y: "-70%" }}
-                            animate = {{ opacity: showButtons && !previewView ? 1 : 0, x: showButtons ? "55%" : "100%", y: "-190%" }}
-                            transition = {{ duration: 0.4 }}>                    
-                            <MobileActionButton onClick={handlePreviewClick}>
-                                PREVIEW
-                            </MobileActionButton>
-                        </motion.div>
-                        <motion.div
-                            initial = {{ opacity: 0, x: "100%", y: "-70%" }}
-                            animate = {{ opacity: showButtons ? 1 : 0, x: showButtons ? previewView ? "50%" : "105%" : "100%", y: previewView ? "-378%" : "-378%" }}
-                            transition = {{ duration: 0.4 }}>
-                            <MobileActionButton onClick={handleSendClick}>
-                                SEND
-                            </MobileActionButton>
-                        </motion.div>
-                        </> : null }
-                        </MobileJsonLabel>
-                    <motion.div
-                        initial = {{ "width": "80%"}}
-                        animate = {{ opacity: previewView? 0 : 1, x: previewView ? "-100%" : "0%" }}>
-                        <MobileJsonTextArea value={json} onChange={handleTextAreaChange}/>
-                    </motion.div>
-                <motion.div
-                    initial = {{ opacity: 0 }}
-                    animate = {{ opacity: invalidJson ? 1 : 0 }}>
-                    <MobileValidationMessage className={styles.JsonValid}>
-                        The entered code is not valid JSON
-                    </MobileValidationMessage>
-                </motion.div>
-            </motion.div>               
-            </> }
+            <>           
+            </>
             { previewView ?
                 <>
-                { width > breakpoint ?
-                <>
+                <motion.div
+                    initial = {{ opacity: 0 }}
+                    animate = {{ opacity: previewView ? 1 : 0 }}
+                    transition = {{ delay: 0.5, duration: 0.6}}>
+                    { renderChart ? 
+                    <ReadingChart
+                        labels={labels} 
+                        milliseconds={milliSeconds} 
+                        values={values}
+                        className={styles.PreviewChart}/>
+                    : null }
+                </motion.div> 
                 <motion.div
                     initial = {{ opacity: 0, y: 200}}
                     animate = {{ opacity: previewView ? 1 : 0, y: previewView ? "-20%" : 200 }}
@@ -462,43 +445,160 @@ const JsonView = (callback) => {
                         onTimestampChange={handleTimestampChange}/>
                 </motion.div> 
                 </>
-                :
+                : null }
+            </motion.div>
+            
+            :
+
+            <motion.div
+                initial = {{ opacity: 1, y: 0 }}
+                animate = {{ opacity: dismiss ? 0 : 1, y: dismiss ? 500 : 0 }}
+                transition = {{ duration: 0.4 }}> 
+                <motion.div
+                    initial = {{ opacity: 0 }}
+                    animate = {{ opacity: 1 }}
+                    transition = {{ duration: 0.4 }}> 
+                    <MobileBackButton onClick={handleBackClick}/>
+                </motion.div>
                 <>
                 <motion.div
-                    initial = {{ opacity: 0, x: "80%", y: "0%"}}
-                    animate = {{ opacity: previewView ? 1 : 0, x: previewView ? "0%" : "100%", y: "30%" }}
-                    transition = {{ delay: 0.5, duration: 0.6}}>
-                    { renderChart ? 
-                    <ReadingChart
-                        labels={labels} 
-                        milliseconds={milliSeconds} 
-                        values={values}
-                        className={styles.PreviewChart}/>
+                    initial = {{ opacity: 0, x: 300}}
+                    animate = {{ opacity: 1, x: previewView ? "0%" : 0, y: previewView ? "0%" : 0 }}
+                    transition = {{ duration: 0.4 }}>
+                        { !previewView ?
+                        <>
+                        <motion.div
+                            initial = {{ "width": "80%"}}
+                            animate = {{ opacity: previewView? 0 : 1, x: previewView ? "-100%" : "0%" }}>
+                            <MobileJsonTextArea id="test-json-area" value={json} onChange={handleTextAreaChange}/>
+                        </motion.div>
+                        <motion.div
+                            initial = {{ opacity: 0 }}
+                            animate = {{ opacity: invalidJson ? 1 : 0 }}>
+                            <MobileValidationMessage className={styles.JsonValid}>
+                                The entered code is not valid JSON
+                            </MobileValidationMessage>
+                        </motion.div>
+                        </>
+                        : null }
+                        <MobileFileLabel style={{ marginTop: "5vh" }}>
+                            {fileName} 
+                            { showBundleForm ?
+                                <>
+                                    <p style={{ marginTop: "5vh" }} className={styles.BundleFileLabel}>Bundle:</p>
+                                    <InputText type="text" value={bundleName} onChange={handleChangeBundleName} className={styles.TypeLabel} style={{ width: "80%", fontSize: "8vw", marginLeft: "10%", borderBottom: "1px solid" }} />
+                                    <motion.div
+                                        initial = {{ opacity: 0, x: 100}}
+                                        animate = {{ opacity: sendWithBundle ? 1 : 0, x: sendWithBundle ? 0 : 100 }}
+                                        transition = {{ duration: 0.4 }}>
+                                        <MobileActionButton className={styles.MobileCenterButtons} id="test-send-button" onClick={handleSendClick}>
+                                            SEND
+                                        </MobileActionButton>
+                                    </motion.div>
+                                </>
+                            : null }
+                            { loading ? <Loading/> : null}
+                            { showButtons ?
+                            <>
+                                <motion.div
+                                    initial = {{ opacity: 0, x: 100}}
+                                    animate = {{ opacity: showButtons && !previewView ? 1 : 0, x: showButtons ? 0 : 100, y: showButtons ? "-50%" : 0 }}
+                                    transition = {{ duration: 0.4 }}>                    
+                                    <MobileActionButton className={styles.MobileCenterButtons} id="test-preview-button" onClick={handlePreviewClick}>
+                                        PREVIEW
+                                    </MobileActionButton>
+                                </motion.div>
+                                { !showBundleForm ?
+                                <>
+                                    <motion.div
+                                        initial = {{ opacity: 0, x: 100}}
+                                        animate = {{ opacity: showButtons ? 1 : 0, x: showButtons ? 0 : 100, y: previewView ? "-100%" : showButtons ? "-150%" : 0 }}
+                                        transition = {{ duration: 0.4 }}>
+                                        <MobileActionButton className={styles.MobileCenterButtons} id="test-send-button" onClick={handleSendClick}>
+                                            SEND AS SINGLE
+                                        </MobileActionButton>
+                                    </motion.div>
+                                    <motion.div
+                                        initial = {{ opacity: 0, x: 100}}
+                                        animate = {{ opacity: showButtons ? 1 : 0, x: showButtons ? 0 : -500, y: previewView ? -50 : showButtons ? "-250%" : 0 }}
+                                        transition = {{ duration: 0.4 }}>
+                                        <MobileActionButton className={styles.MobileCenterButtons} onClick={handleShowBundleModal}>
+                                            SEND TO BUNDLE
+                                        </MobileActionButton>
+                                    </motion.div>
+                                </>
+                                : null }
+                            </>
+                            : null }
+                        </MobileFileLabel>
+                </motion.div>
+                </>
+                <>           
+                </>
+                { previewView ?
+                    <>
+                    <motion.div
+                        initial = {{ opacity: 0 }}
+                        animate = {{ opacity: previewView ? 1 : 0, y: previewView ? "-20%" : 0 }}
+                        transition = {{ delay: 0.5, duration: 0.6}}>
+                        { renderChart ? 
+                        <ReadingChart
+                            labels={labels} 
+                            milliseconds={milliSeconds} 
+                            values={values}
+                            className={styles.PreviewChart}/>
+                        : null }
+                    </motion.div> 
+                    <motion.div
+                        initial = {{ opacity: 0, y: 200}}
+                        animate = {{ opacity: previewView ? 1 : 0, y: previewView ? "0%" : 200 }}
+                        transition = {{ delay: 0.5, duration: 0.4}}>
+                        <DataTable
+                            passedLabels={sensorLabels}
+                            passedRowsCount={rowsCount}
+                            passedLabelCount={labelCount}
+                            passedTimestamps={timestamps}
+                            passedMilliSeconds={milliSeconds}
+                            passedSensorValue1={sensorValue1}
+                            passedSensorValue2={sensorValue2}
+                            passedSensorValue3={sensorValue3}
+                            onSensorValue1Change={handleSensorValue1Change}
+                            onSensorValue2Change={handleSensorValue2Change}
+                            onSensorValue3Change={handleSensorValue3Change}
+                            onSensorLabelChange={handleSensorLabelChange}
+                            onMillisecondsChange={handleMillisecondsChange}
+                            onTimestampChange={handleTimestampChange}/>
+                    </motion.div> 
+                    </>
                     : null }
-                </motion.div> 
-                <motion.div
-                    initial = {{ opacity: 0, y: "-20%"}}
-                    animate = {{ opacity: previewView ? 1 : 0, y: previewView ? "15%" : "100%" }}
-                    transition = {{ delay: 0.5, duration: 0.4}}>
-                    <DataTable
-                        passedLabels={sensorLabels}
-                        passedRowsCount={rowsCount}
-                        passedLabelCount={labelCount}
-                        passedTimestamps={timestamps}
-                        passedMilliSeconds={milliSeconds}
-                        passedSensorValue1={sensorValue1}
-                        passedSensorValue2={sensorValue2}
-                        passedSensorValue3={sensorValue3}
-                        onSensorValue1Change={handleSensorValue1Change}
-                        onSensorValue2Change={handleSensorValue2Change}
-                        onSensorValue3Change={handleSensorValue3Change}
-                        onSensorLabelChange={handleSensorLabelChange}
-                        onMillisecondsChange={handleMillisecondsChange}
-                        onTimestampChange={handleTimestampChange}/>
-                </motion.div>                
-                </> }
-                </> : null }
-            </motion.div>
+                </motion.div> }
+
+                <Modal show={showBundleModal} onHide={handleCloseBundleModal} animation={true} centered backdrop="static" backdropClassName={styles.ModalBackdrop}>
+                    <Modal.Header closeButton>
+                        <h4>Choose destination bundle</h4>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <Select options={bundleSelect} onChange={handleOnSelectChange} />
+                        { width > breakpoint ?
+                        <>
+                            <p>Or create a new one:</p>
+                            <InputText type="text" value={bundleName} onChange={handleChangeBundleName} className={styles.TypeLabel}/>
+                        </>
+                        :
+                        <>
+                            <p class="mt-5 mb-5">Or create a new one:</p>
+                            <InputText style={{ fontSize: "5vw" }} type="text" value={bundleName} onChange={handleChangeBundleName} className={styles.TypeLabel}/>
+                        </> }
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <button onClick={handleCloseBundleModal} className={styles.CancelButton}>
+                            Cancel
+                        </button>
+                        <button onClick={(e) => {handleSendClick(e)}} className={styles.DeleteButton}>
+                            Send
+                        </button>
+                    </Modal.Footer>
+                </Modal>
         </>
     )
 }

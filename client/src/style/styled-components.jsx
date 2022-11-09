@@ -308,7 +308,7 @@ const RemoveButton = styled.button.attrs({
     className: "fa-solid fa-trash-can add-button", type: "button"
 })` 
     font-size: 16px;
-    background-color: white;
+    background-color: rgba(0,0,0,0);
     width: 28px;
     height: 28px;
     color: #ff5900;
@@ -327,7 +327,26 @@ const MoveButton = styled.button.attrs({
     className: "fa-solid fa-arrow-right-arrow-left", type: "button"
 })` 
     font-size: 16px;
-    background-color: white;
+    background-color: rgba(0,0,0,0);
+    width: 28px;
+    height: 28px;
+    color: #ff5900;
+    padding: 0;
+    border: none;
+    border-radius: 5px;
+    margin-right: 5px;
+    transition: 0.2s;
+    float: right;
+    &:hover {
+        transform: scale(1.3)
+    }
+`
+
+const ShareButton = styled.button.attrs({
+    className: "fa-solid fa-share-nodes", type: "button"
+})` 
+    font-size: 16px;
+    background-color: rgba(0,0,0,0);
     width: 28px;
     height: 28px;
     color: #ff5900;
@@ -1148,11 +1167,9 @@ const HomeDescription = styled.div.attrs({
     font-weight: bold;
     color: #4F4F4F;
     font-size: 1.3vw;
-    position: absolute;
-    top: 18%;
-    right: 10%;
     text-align: right;
     padding-left: 4%;
+    padding-right: 4%;
 `
 
 const ListRow = styled.div.attrs({
@@ -1412,6 +1429,21 @@ const DeleteGray = styled.div.attrs({
     }
 `
 
+const DeleteTask = styled.div.attrs({
+    className: "fa-solid fa-trash-can"
+})`
+    float: right;
+    padding: 0.8vw;
+    padding-top: 1vw;
+    font-size: 1.3vw;
+    cursor: pointer;
+    transition: 0.2s;
+    &:hover {
+        transform: scale(1.2);
+        padding-top: 0.7vw;
+    }
+`
+
 const CollapseIcon = styled.div.attrs({
     className: "fa-solid fa-chevron-up"
 })`
@@ -1433,7 +1465,7 @@ const TaskTab = styled.div.attrs({
     padding: 1vw;
     width: 100%;
     height: auto;
-    margin-right: 5vw;
+    margin-right: 4.5vw;
     margin-bottom: 2vw;
     font-family: Trebuchet MS, sans-serif;
     color: #7e7e7e;
@@ -1453,7 +1485,6 @@ const TaskContainer = styled.div.attrs({
 })`
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
     width: 100%;
 `
 
@@ -1700,6 +1731,8 @@ export {
     SolutionButton,
     TaskContainer,
     SolutionStep,
-    SolutionStepDescription,}
+    SolutionStepDescription,
+    DeleteTask,
+    ShareButton,}
 
 

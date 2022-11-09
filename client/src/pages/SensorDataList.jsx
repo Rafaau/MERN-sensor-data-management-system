@@ -24,7 +24,8 @@ import {
     AddGroupButton,
     InputText,
     EmptyList,
-    DeleteGray, } from "../style/styled-components"
+    DeleteGray,
+    ShareButton, } from "../style/styled-components"
 import { 
     MobileContentBlock, 
     MobileListRow, 
@@ -34,25 +35,22 @@ import {
     MobileTableFooter, 
     MobileNextPage, 
     MobilePreviousPage, 
-    MobileEmptyListMessage } from "../style/styled-mobile-components"
+    MobileEmptyListMessage, 
+    MobileGroupListLabel,
+    MobileExpandIcon,
+    MobileCollapseIcon,
+    MobileDeleteGray} from "../style/styled-mobile-components"
 import styles from "../style/site.module.css"
 import "bootstrap/dist/css/bootstrap.min.css"
 import Modal from "react-bootstrap/Modal"
 import Options from "../style/options.js"
 import ReactTooltip from "react-tooltip"
 import { Tooltips, NotAuthorizedView } from "../components"
-import { motion } from "framer-motion"
+import { checkTargetForNewValues, motion } from "framer-motion"
 import Select from "react-select"
 
 function Table({columns, data}) {
-    const didMount = useRef(true)
-    const [helper, invokeHelper] = useState(1)
-    const [show, setShow] = useState(false)
     var optionsInstance = new Options()
-    const [openSuccessSnackbar, closeSuccessSnackbar] = useSnackbar(optionsInstance.successSnackbarOptions)
-    const [openErrorSnackbar, closeErrorSnackbar] = useSnackbar(optionsInstance.errorSnackbarOptions)
-    const [readingObj, passReadingObj] = useState({})
-    const [bundleObj, passBundleObj] = useState({})
 
     const {
         getTableProps,
@@ -113,13 +111,6 @@ function Table({columns, data}) {
 }
 
 function MobileTable({columns, data}) {
-    const didMount = useRef(true)
-    const [helper, invokeHelper] = useState(1)
-    const [show, setShow] = useState(false)
-    var optionsInstance = new Options()
-    const [openSuccessSnackbar, closeSuccessSnackbar] = useSnackbar(optionsInstance.successSnackbarOptions)
-    const [openErrorSnackbar, closeErrorSnackbar] = useSnackbar(optionsInstance.errorSnackbarOptions)
-    const [readingObj, passReadingObj] = useState({})
 
     const {
         getTableProps,
@@ -168,8 +159,12 @@ function MobileTable({columns, data}) {
         </table>
         </div>   
         <MobileTableFooter>
-            <MobilePreviousPage onClick={() => previousPage()} disabled={!canPreviousPage}></MobilePreviousPage>
-            <MobileNextPage onClick={() => nextPage()} disabled={!canNextPage}></MobileNextPage>
+        { canPreviousPage ?
+            <MobilePreviousPage onClick={() => previousPage()} disabled={!canPreviousPage}/>
+            : null }
+            { canNextPage ?
+            <MobileNextPage onClick={() => nextPage()} disabled={!canNextPage}/>
+            : null }
         </MobileTableFooter> 
       </>       
     )
@@ -183,6 +178,7 @@ function SensorDataList(callback) {
     const [sensordatas, setSensorDatas] = useState([])
     const [readingBundles, setReadingBundles] = useState([])
     const [bundleGroups, setBundleGroups] = useState([])
+    const [sharedBundles, setSharedBundles] = useState([])
     const [show, setShow] = useState(false)
     const [showMove, setShowMove] = useState(false)
     const [helper, invokeHelper] = useState(1)
@@ -198,6 +194,7 @@ function SensorDataList(callback) {
     const [showSingleReadings, setShowSingleReadings] = useState(false)
     const [showReadingBundle, setShowReadingBundle] = useState(false)
     const [showBundleGroup, setShowBundleGroup] = useState("")
+    const [showShared, setShowShared] = useState(false)
     const [currentBundleGroup, setCurrentBundleGroup] = useState([])
     const [moveSelect, setMoveSelect] = useState([])
     const [selectValue, setSelectValue] = useState("")
@@ -240,6 +237,19 @@ function SensorDataList(callback) {
             }
         }
 
+        async function getSharedBundles() {
+            let response = { status: "" }
+            try {
+                response = await api.getSharedBundles()
+            } catch (err) {
+                setSharedBundles([])
+            } finally {
+                if (response.status == 200) {
+                    setSharedBundles(response.data.data)
+                }
+            }
+        }
+
         async function getBundleGroups() {
             let response = { status: "" }
             try {
@@ -257,6 +267,7 @@ function SensorDataList(callback) {
             getSensorDatas()
             getReadingBundles()
             getBundleGroups()
+            getSharedBundles()
             didMount.current = false
             return
         }
@@ -264,6 +275,7 @@ function SensorDataList(callback) {
         getSensorDatas()
         getReadingBundles()
         getBundleGroups()
+        getSharedBundles()
     }, [helper])
 
     useEffect(() => {
@@ -277,7 +289,8 @@ function SensorDataList(callback) {
         const loggedInUser = localStorage.getItem("user")
         if (loggedInUser) {
             const foundUser = loggedInUser
-            setUser(JSON.parse(foundUser))
+            const user = await api.getUserByEmail(JSON.parse(foundUser).email)
+            setUser(user.data.data)
             setLogged(true)
         }
     }
@@ -377,7 +390,20 @@ function SensorDataList(callback) {
         return {...bundle, createdAt: new Date(bundle.createdAt).toLocaleString()}
     })
 
+    const filteredSharedBundles = sharedBundles.filter(bundle => bundle.userId != user._id)
+    const sharedFixedDate = filteredSharedBundles.map(bundle => { 
+        return {...bundle, createdAt: new Date(bundle.createdAt).toLocaleString()}
+    })
+
     const bundleData = useMemo(() => bundlesFixedDate,
+    [
+        {
+            delCol: "",
+        },
+    ],
+    [])
+
+    const sharedBundleData = useMemo(() => sharedFixedDate,
     [
         {
             delCol: "",
@@ -468,6 +494,35 @@ function SensorDataList(callback) {
         setShowCreate(false)   
     }
 
+    const handleShareBundle = async (event, bundle) => {
+        event.preventDefault()
+        let share
+        if (bundle.isShared)
+            share = false
+        else
+            share = true
+
+        const bundleToUpdate = {
+            _id: bundle._id,
+            name: bundle.name,
+            userId: bundle.userId,
+            groupId: bundle.groupId,
+            isShared: share,
+        }
+        const response = await api.updateBundle(bundle._id, bundleToUpdate) 
+        if (response.status == 200) {
+            if (share)
+                openSuccessSnackbar("Bundle shared successfully!")
+            else
+                openSuccessSnackbar("Bundle is no more shared")
+            invokeHelper({...helper})      
+        } 
+        else {
+            openErrorSnackbar("Something went wrong")
+            invokeHelper({...helper}) 
+        }
+    }
+
     const groupBundleData = useMemo(() => currentBundleGroup,
     [
         {
@@ -492,14 +547,20 @@ function SensorDataList(callback) {
         {
             Header: "",
             accessor: "_id",
-            Cell: function(props) {
+            Cell: (props) => {     
                 return (
                     <>
-                        <Flex>
-                            <MoveButton data-tip data-for="MoveBundle" onClick={() => {handleShowMoveBundleModal(props.row.original)}}/>
-                            <RemoveButton id="test-remove-button" data-tip data-for="DeleteReading" onClick={() => {handleShowBundleModal(props.row.original)}}/>
-                        </Flex>
-                        <Tooltips/>
+                        { props.row.original.userId == user._id ?
+                        <>
+                            <Flex>
+                                { !props.row.original.isShared ?
+                                    <ShareButton style={{ color: "gray" }} data-tip data-for="NotShared" onClick={(e) => {handleShareBundle(e, props.row.original)}} />
+                                :   <ShareButton data-tip data-for="Shared" onClick={(e) => {handleShareBundle(e, props.row.original)}} /> }
+                                <MoveButton data-tip data-for="MoveBundle" onClick={() => {handleShowMoveBundleModal(props.row.original)}}/>
+                                <RemoveButton id="test-remove-button" data-tip data-for="DeleteReading" onClick={() => {handleShowBundleModal(props.row.original)}}/>
+                            </Flex>
+                            <Tooltips/>
+                        </> : null }
                     </>     
                 )             
         },
@@ -546,10 +607,12 @@ function SensorDataList(callback) {
 
             rows.push(
                 <>
+                { width > breakpoint ?
+                <>
                 <GroupListLabel>
                     { bundleGroups[i].name }
                     { showBundleGroup != bundleGroups[i].name ?
-                        <ExpandIcon onClick = {() => { setShowBundleGroup(bundleGroups[i].name); setCurrentBundleGroup(mapped); setShowSingleReadings(false); setShowReadingBundle(false) } } />
+                        <ExpandIcon onClick = {() => { setShowBundleGroup(bundleGroups[i].name); setCurrentBundleGroup(mapped); setShowSingleReadings(false); setShowReadingBundle(false); setShowShared(false) } } />
                         :
                         <CollapseIcon onClick = {() => { setShowBundleGroup("") } } /> 
                     }
@@ -572,6 +635,36 @@ function SensorDataList(callback) {
                     </EmptyList> }
                 </>
                 : null } 
+                </>
+                :
+                <>
+                <MobileGroupListLabel>
+                    { bundleGroups[i].name }
+                    { showBundleGroup != bundleGroups[i].name ?
+                        <MobileExpandIcon onClick = {() => { setShowBundleGroup(bundleGroups[i].name); setCurrentBundleGroup(mapped); setShowSingleReadings(false); setShowReadingBundle(false); setShowShared(false) } } />
+                        :
+                        <MobileCollapseIcon onClick = {() => { setShowBundleGroup("") } } /> 
+                    }
+                    <MobileDeleteGray onClick = {() => { handleShowGroupRemove(bundleGroups[i]) } } />
+                </MobileGroupListLabel>
+                { showBundleGroup == bundleGroups[i].name ? 
+                <>
+                    { mapped.length ? 
+                    <motion.div
+                        initial = {{ opacity: 0, y: "-100%" }}
+                        animate = {{ opacity: 1, y: "0%" }}
+                        transition = {{ delay: 0.2 }}>
+                        <MobileTable 
+                            columns = { groupBundleColumns } 
+                            data = { groupBundleData } />  
+                    </motion.div> 
+                    : 
+                    <MobileEmptyListMessage>
+                        You didn't insert any reading yet
+                    </MobileEmptyListMessage> }
+                </>
+                : null } 
+                </> }
                 </>
             )         
         }
@@ -609,7 +702,7 @@ function SensorDataList(callback) {
                             <GroupListLabel>
                                 Reading bundles
                                 { !showReadingBundle ?
-                                    <ExpandIcon onClick = {() => { setShowReadingBundle(true); setShowSingleReadings(false); setShowBundleGroup("") } } />
+                                    <ExpandIcon onClick = {() => { setShowReadingBundle(true); setShowSingleReadings(false); setShowBundleGroup(""); setShowShared(false) } } />
                                     :
                                     <CollapseIcon onClick = {() => { setShowReadingBundle(false) } } /> 
                                 }
@@ -634,7 +727,7 @@ function SensorDataList(callback) {
                             <GroupListLabel>
                                 Single readings
                                 { !showSingleReadings ?
-                                    <ExpandIcon onClick = {() => { setShowSingleReadings(true); setShowReadingBundle(false); setShowBundleGroup("") } } />
+                                    <ExpandIcon onClick = {() => { setShowSingleReadings(true); setShowReadingBundle(false); setShowBundleGroup(""); setShowShared(false) } } />
                                     :
                                     <CollapseIcon onClick = {() => { setShowSingleReadings(false) } } /> 
                                 }
@@ -656,6 +749,31 @@ function SensorDataList(callback) {
                                 </EmptyList> }
                             </>
                             : null }
+                            <GroupListLabel>
+                                Shared
+                                { !showShared ?
+                                    <ExpandIcon onClick = {() => { setShowShared(true); setShowSingleReadings(false); setShowReadingBundle(false); setShowBundleGroup("") } } />
+                                    :
+                                    <CollapseIcon onClick = {() => { setShowShared(false) } } /> 
+                                }
+                            </GroupListLabel>
+                            { showShared ?
+                            <>
+                                { sharedFixedDate.length ?
+                                <motion.div
+                                    initial = {{ opacity: 0, y: "-100%" }}
+                                    animate = {{ opacity: 1, y: "0%" }}
+                                    transition = {{ delay: 0.2 }}>
+                                    <Table 
+                                        columns = { groupBundleColumns } 
+                                        data = { sharedBundleData } />  
+                                </motion.div> 
+                                :
+                                <EmptyList>
+                                    No bundles currently shared 
+                                </EmptyList> }
+                            </>
+                            : null }
                         </> 
                 : <NotAuthorizedView/> }          
         </ContentBlock>
@@ -664,40 +782,104 @@ function SensorDataList(callback) {
         <>
             <MobileContentBlock>
                 { logged ?
-                    <>  
-                        { !noReadingsView ?
-                            <>
-                                <motion.div
-                                    initial = {{ opacity: 0, y: "-20%" }}
-                                    animate = {{ opacity: 1, y: "0%" }}
-                                    >
-                                    <MobileListRow>
-                                        <MobileListHeader>
-                                            All readings
-                                        </MobileListHeader>
-                                        <MobileListTotal>
-                                            Total: {distinctedByUuid.length}
-                                        </MobileListTotal>
-                                    </MobileListRow>
-                                </motion.div>
-                                <motion.div
-                                    initial = {{ opacity: 0, y: "-100%" }}
-                                    animate = {{ opacity: 1, y: "0%" }}
-                                    transition = {{ delay: 0.2 }}>
-                                    <MobileTable 
-                                        columns = { columns } 
-                                        data = { data } />  
-                                </motion.div> 
-                            </> 
-                        : 
+                <>  
+                <ReactTooltip id="AddBundleGroup" type="dark" effect="solid">
+                    <span>New bundle group</span>
+                </ReactTooltip> 
+
+                        <motion.div
+                            initial = {{ opacity: 0, y: "-20%" }}
+                            animate = {{ opacity: 1, y: "0%" }}
+                            >
+                            <ListRow>
+                                <MobileListHeader>
+                                    All readings
+                                </MobileListHeader>
+                                <MobileListTotal>
+                                    Total: {readingCount}
+                                </MobileListTotal>
+                            </ListRow>
+                            <ListRow style={{height: "36px"}}>
+                                <AddGroupButton data-tip data-for="AddBundleGroup" onClick={handleShowCreate}/>
+                            </ListRow>
+                        </motion.div>
+                        <BundleGroups />
+                        <MobileGroupListLabel>
+                            Reading bundles
+                            { !showReadingBundle ?
+                                <MobileExpandIcon onClick = {() => { setShowReadingBundle(true); setShowSingleReadings(false); setShowBundleGroup(""); setShowShared(false) } } />
+                                :
+                                <MobileCollapseIcon onClick = {() => { setShowReadingBundle(false) } } /> 
+                            }
+                        </MobileGroupListLabel>
+                        { showReadingBundle ?
+                        <>
+                            { bundlesFixedDate.length ?
                             <motion.div
-                                initial = {{ opacity: 0 }}
-                                animate = {{ opacity: 1 }}>
-                                <MobileEmptyListMessage>
-                                    You didn't insert any reading yet
-                                </MobileEmptyListMessage>
-                            </motion.div> }
-                    </>
+                                initial = {{ opacity: 0, y: "-100%" }}
+                                animate = {{ opacity: 1, y: "0%" }}
+                                transition = {{ delay: 0.2 }}>
+                                <MobileTable 
+                                    columns = { groupBundleColumns } 
+                                    data = { bundleData } />  
+                            </motion.div> 
+                            :
+                            <MobileEmptyListMessage>
+                                You didn't insert any bundle yet
+                            </MobileEmptyListMessage> }
+                        </>
+                        : null }
+                        <MobileGroupListLabel>
+                            Single readings
+                            { !showSingleReadings ?
+                                <MobileExpandIcon onClick = {() => { setShowSingleReadings(true); setShowReadingBundle(false); setShowBundleGroup(""); setShowShared(false) } } />
+                                :
+                                <MobileCollapseIcon onClick = {() => { setShowSingleReadings(false) } } /> 
+                            }
+                        </MobileGroupListLabel>
+                        { showSingleReadings ?
+                        <>
+                            { fixedDate.length ?
+                            <motion.div
+                                initial = {{ opacity: 0, y: "-100%" }}
+                                animate = {{ opacity: 1, y: "0%" }}
+                                transition = {{ delay: 0.2 }}>
+                                <MobileTable 
+                                    columns = { columns } 
+                                    data = { data } />  
+                            </motion.div> 
+                            : 
+                            <MobileEmptyListMessage>
+                                You didn't insert any reading yet
+                            </MobileEmptyListMessage> }
+                        </>
+                        : null }
+                        <MobileGroupListLabel>
+                            Shared
+                            { !showShared ?
+                                <MobileExpandIcon onClick = {() => { setShowShared(true); setShowSingleReadings(false); setShowReadingBundle(false); setShowBundleGroup("") } } />
+                                :
+                                <MobileCollapseIcon onClick = {() => { setShowShared(false) } } /> 
+                            }
+                        </MobileGroupListLabel>
+                        { showShared ?
+                        <>
+                            { sharedFixedDate.length ?
+                            <motion.div
+                                initial = {{ opacity: 0, y: "-100%" }}
+                                animate = {{ opacity: 1, y: "0%" }}
+                                transition = {{ delay: 0.2 }}>
+                                <MobileTable 
+                                    columns = { groupBundleColumns } 
+                                    data = { sharedBundleData } />  
+                            </motion.div> 
+                            :
+                            <MobileEmptyListMessage>
+                                No bundles currently shared 
+                            </MobileEmptyListMessage> }
+                        </>
+                        : null }
+                    </> 
                 : <NotAuthorizedView/> }           
             </MobileContentBlock>
         </> }
@@ -754,8 +936,16 @@ function SensorDataList(callback) {
                 <h4>Add new bundle group</h4>
             </Modal.Header>
             <Modal.Body>
-                <p className={styles.ModalLabel}>Name:</p>
-                <InputText value={createInput} onChange={(event) => {setCreateInput(event.target.value)}}/>
+                { width > breakpoint ?
+                <>
+                    <p className={styles.ModalLabel}>Name:</p>
+                    <InputText value={createInput} onChange={(event) => {setCreateInput(event.target.value)}}/>
+                </>
+                :
+                <>
+                    <p className={styles.ModalLabel} style={{ fontSize: "5vw" }}>Name:</p>
+                    <InputText value={createInput} onChange={(event) => {setCreateInput(event.target.value)}} style={{ fontSize: "5vw" }}/>
+                </> }
             </Modal.Body>
             <Modal.Footer style={{borderTop: "0"}}>
                 <button onClick={handleCloseCreate} className={styles.CancelButton}>

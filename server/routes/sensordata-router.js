@@ -18,10 +18,13 @@ router.delete("/reading/bundle/:bundleId", SensorDataController.deleteReadingByB
 router.post("/file", SensorDataController.downloadFile)
 router.get("/file/:filename", SensorDataController.readFile)
 
-// STREAM
+// TASKS
 router.post("/stream", SensorDataController.streamDataToDb)
 router.get("/task/:task", SensorDataController.getReadingsByTask)
 router.get("/task/:task/:name", SensorDataController.getReadingsByTaskAndName)
+router.put("/task/:name", SensorDataController.shareTaskByName)
+router.get("/tasks/by/shared", SensorDataController.getSharedTasks)
+router.delete("/task/:task/:userId", SensorDataController.deleteReadingsByTask)
 
 // USER
 router.post("/user", UserController.createUser)
@@ -37,6 +40,7 @@ router.get("/bundle/:name", ReadingBundleController.getBundleByName)
 router.get("/bundles/:userId", ReadingBundleController.getBundlesByUserId)
 router.get("/bundles/group/:groupId", ReadingBundleController.getBundlesByGroupId)
 router.get("/bundle/id/:_id", ReadingBundleController.getBundleById)
+router.get("/bundles/by/shared", ReadingBundleController.getBundlesByShared)
 router.post("/bundle", ReadingBundleController.createBundle)
 router.put("/bundle/:_id", ReadingBundleController.updateBundle)
 router.delete("/bundle/:_id", ReadingBundleController.deleteBundle)

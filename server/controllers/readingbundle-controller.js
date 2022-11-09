@@ -100,6 +100,26 @@ getBundleById = async (req, res) => {
     }).catch(err => console.log(err))
 }
 
+getBundlesByShared = async (req, res) => {
+    await ReadingBundle.find({ isShared: true }, (err, bundles) => {
+        if (err) {
+            return res
+                .status(400)
+                .json({ success: false, error: err })
+        }
+
+        if (!bundles.length) {
+            return res
+                .status(404)
+                .json({ success: false, error: "Bundles not found" })
+        }
+
+        return res
+            .status(200)
+            .json({ success: true, data: bundles })
+    }).catch(err => console.log(err))
+}
+
 createBundle = async (req, res) => {
     const body = req.body
 
@@ -153,6 +173,7 @@ updateBundle = async (req, res) => {
         }
 
         bundle.groupId = body.groupId
+        bundle.isShared = body.isShared
 
         bundle
             .save()
@@ -201,6 +222,7 @@ module.exports = {
     getBundlesByUserId,
     getBundlesByGroupId,
     getBundleById,
+    getBundlesByShared,
     createBundle,
     updateBundle,
     deleteBundle,

@@ -168,7 +168,7 @@ const DataTable = (props) => {
                 <thead  className={styles.InputHead}>
                     <tr>
                         <Head span="Timestamps"/>
-                        <Head span="Milliseconds"/>
+                        <Head span="Seconds"/>
                         <InputHead>
                             <InputText id="test-insert-label1" type="text" spellcheck="false" value={sensorLabels[0]} onChange={ function(e){ handleChangeInputSensorLabel(e, 0)} } className={styles.LabelInput}/>
                         </InputHead>

@@ -10,13 +10,20 @@ import {
     DownloadFileButton,
     FilterButton,
     SortIcon, } from "../style/styled-components"
-import { ReadingChart } from "../components"
+import { NotAuthorizedView, ReadingChart } from "../components"
 import { useParams } from "react-router-dom"
 import api from "../api"
 import { useSortBy, useTable, usePagination } from "react-table"
 import { CSVLink } from "react-csv"
 import styles from "../style/site.module.css"
 import { motion } from "framer-motion"
+import { MobileBackButton, 
+    MobileContentBlock,
+    MobileDetailsName,
+    MobileTableFooter,
+    MobilePreviousPage,
+    MobileNextPage,
+    MobileSortIcon, } from "../style/styled-mobile-components"
 
 function TaskReadingDetails() {
     const didMount = useRef(true)
@@ -26,6 +33,10 @@ function TaskReadingDetails() {
     const [helper, invokeHelper] = useState(1)
     const [nullFilter, setNullFilter] = useState([])
     const [dismiss, setDismiss] = useState(false)
+    const [logged, setLogged] = useState(false)
+    const [user, setUser] = useState({})
+    const [width, setWidth] = useState(window.innerWidth)
+    const breakpoint = 620;
 
     useEffect(() => {
         async function getReadings() {
@@ -44,10 +55,27 @@ function TaskReadingDetails() {
 
         if (didMount.current) {
             getReadings()
+            setupUser()
             didMount.current = false
             return
         }
     },[])
+
+    useEffect(() => {
+        const handleWindowResize = () => setWidth(window.innerWidth)
+        window.addEventListener("resize", handleWindowResize)
+    
+        return () => window.removeEventListener("resize", handleWindowResize)
+    }, [])
+
+    const setupUser = () => {
+        const loggedInUser = localStorage.getItem("user")
+        if (loggedInUser) {
+            const foundUser = loggedInUser
+            setUser(JSON.parse(foundUser))
+            setLogged(true)
+        }
+    }
 
     let firstTimestamp = 0
     let columns = []
@@ -58,13 +86,13 @@ function TaskReadingDetails() {
 
         columns = [
             {
-                Header: <>Timestamp <SortIcon/> </>,
+                Header: <>Timestamp { width > breakpoint ? <SortIcon/> : <MobileSortIcon/> } </>,
                 accessor: "timestamp",
                 Cell: props => 
                     <>{props.value}</>,
             },
             {
-                Header: <>Seconds <SortIcon/> </>,
+                Header: <>Seconds { width > breakpoint ? <SortIcon/> : <MobileSortIcon/> } </>,
                 accessor: "milliseconds",
                 Cell: props => 
                     <>{props.value}</>,
@@ -145,7 +173,13 @@ function TaskReadingDetails() {
     }
 
     return (
+        <>
+        { width > breakpoint ?
         <ContentBlock>
+            { !logged ?
+            <NotAuthorizedView/>
+            :
+            <>
             <Content>
                 <motion.div
                     initial = {{ x: "-30%", opacity: 0 }}
@@ -173,7 +207,43 @@ function TaskReadingDetails() {
                     <Table columns={columns} data={data} />
                 </motion.div>
             </Content>
+            </> }
         </ContentBlock>
+        :
+        <MobileContentBlock>
+            { !logged ?
+            <NotAuthorizedView/>
+            :
+            <>
+                <motion.div
+                    initial = {{ x: "-30%", opacity: 0 }}
+                    animate = {{ x: !dismiss ? "0%" : "-30%", opacity: !dismiss ? 1 : 0 }}
+                    transition = {{ duration: 0.3 }}>
+                    <MobileBackButton onClick={handleBackToTask}/>
+                    <MobileDetailsName style={{ marginTop: "3vw" }}>{sensor}</MobileDetailsName>
+                </motion.div>
+                <motion.div
+                    initial = {{ x: "50%", opacity: 0 }}
+                    animate = {{ x: !dismiss ? "0%" : "50%", opacity: !dismiss ? 1 : 0 }}
+                    transition = {{ duration: 0.3, delay: 0.2 }}
+                    class="mt-5">
+                    <ReadingChart labels={labels} milliseconds={milliseconds} values={values} /> 
+                </motion.div>
+                <motion.div
+                    initial = {{ y: "50%", opacity: 0 }}
+                    animate = {{ y: !dismiss ? "0%" : "50%", opacity: !dismiss? 1 : 0 }}
+                    transition = {{ duration: 0.3, delay: 0.4 }}>
+                    <CSVLink data={csvFile} filename={sensor}>
+                        <DownloadFileButton style={{width: "auto", float: "right", marginTop: "5vw"}}>    
+                            <span className={styles.DownloadSpan}>.csv</span>
+                        </DownloadFileButton>
+                    </CSVLink>
+                    <FilterButton style={{width: "auto", float: "right", marginBottom: "1vh", marginTop: "5vw", marginRight: "0.5vw"}} onClick={handleNullFilter}>Filter null values</FilterButton>
+                    <MobileTable columns={columns} data={data} />
+                </motion.div>
+                </> }
+        </MobileContentBlock> }
+        </>
     )
 }
 
@@ -235,5 +305,65 @@ function Table({columns, data}) {
       </>       
     )
 }
+
+function MobileTable({columns, data}) {
+
+    const {
+        getTableProps,
+        getTableBodyProps,
+        headerGroups,
+        page,
+        nextPage,
+        previousPage,
+        canNextPage,
+        canPreviousPage,
+        prepareRow,
+
+    } = useTable({ columns, data, initialState: { pageSize: 11 } }, useSortBy, usePagination)
+
+    return (
+        <>
+        <div>
+            <table {...getTableProps()} className={styles.MobileListTable}>
+                <thead>
+                    {headerGroups.map(headerGroup => (
+                        <tr {...headerGroup.getHeaderGroupProps()}>
+                            {headerGroup.headers.map(column => (
+                                <th {...column.getHeaderProps(column.getSortByToggleProps())} className={styles.MobileListHeader}>
+                                    {column.render('Header')}
+                                </th>
+                    ))}
+                </tr>
+            ))}
+          </thead>
+          <tbody {...getTableBodyProps()}>
+          {page.map(row => {
+            prepareRow(row)
+            return (
+                <tr {...row.getRowProps()} className={styles.MobileListTr}>
+                  {row.cells.map(cell => {
+                    return (
+                        <td {...cell.getCellProps()} className={styles.MobileListCell}>
+                          {cell.render('Cell')}
+                        </td>
+                    )
+                  })}
+                </tr>
+            )
+          })}
+          </tbody>
+        </table>
+        </div>   
+        <MobileTableFooter>
+        { canPreviousPage ?
+            <MobilePreviousPage onClick={() => previousPage()} disabled={!canPreviousPage}/>
+            : null }
+            { canNextPage ?
+            <MobileNextPage onClick={() => nextPage()} disabled={!canNextPage}/>
+            : null }
+        </MobileTableFooter> 
+      </>       
+    )
+} 
 
 export default TaskReadingDetails

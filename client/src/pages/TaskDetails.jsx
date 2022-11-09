@@ -14,12 +14,18 @@ import styles from "../style/site.module.css"
 import JSZip from "jszip"
 import { saveAs } from "file-saver"
 import { motion } from "framer-motion"
+import { MobileContentBlock, MobileTaskDate, MobileTaskDateLabel, MobileTaskHeader, MobileTaskReadingTab } from "../style/styled-mobile-components"
+import { NotAuthorizedView } from "../components"
 
 function TaskDetails() {
     const didMount = useRef(true)
     const { task } = useParams()
     const [readings, setReadings] = useState([])
     const [dismiss, setDismiss] = useState(false)
+    const [width, setWidth] = useState(window.innerWidth)
+    const [logged, setLogged] = useState(false)
+    const [user, setUser] = useState({})
+    const breakpoint = 620;
     const zip = new JSZip()
 
     useEffect(() => {
@@ -38,10 +44,27 @@ function TaskDetails() {
 
         if (didMount.current) {
             getReadings()
+            setupUser()
             didMount.current = false
             return
         }
     })
+
+    useEffect(() => {
+        const handleWindowResize = () => setWidth(window.innerWidth)
+        window.addEventListener("resize", handleWindowResize)
+    
+        return () => window.removeEventListener("resize", handleWindowResize)
+    }, [])
+
+    const setupUser = () => {
+        const loggedInUser = localStorage.getItem("user")
+        if (loggedInUser) {
+            const foundUser = loggedInUser
+            setUser(JSON.parse(foundUser))
+            setLogged(true)
+        }
+    }
 
     const groupedBySensor = [...new Map(readings.map(reading => [reading["name"], reading])).values()]
     const firstLog = new Date(Math.min(...readings.map(r => new Date(r.createdAt))))
@@ -64,10 +87,16 @@ function TaskDetails() {
                         initial = {{ y: "-40%", opacity: 0 }}
                         animate = {{ y: "0%", opacity: !dismiss ? 1 : 0 }}
                         transition = {{ duration: 0.2, delay: !dismiss ? i : 0, type: "spring" }}>
+                        { width > breakpoint ?
                         <TaskReadingTab onClick={() => {handleRedirectToReading(sensor)}}>
                             {sensor.name}
                             <div style={{float: "right"}}>Total readings: {readings.filter(r => r.name == sensor.name).length}</div>
                         </TaskReadingTab>
+                        :
+                        <MobileTaskReadingTab  onClick={() => {handleRedirectToReading(sensor)}}>
+                            {sensor.name}
+                            <div style={{float: "right"}}>Total readings: {readings.filter(r => r.name == sensor.name).length}</div>                      
+                        </MobileTaskReadingTab> }
                     </motion.div>
                 </>
             )
@@ -122,7 +151,13 @@ function TaskDetails() {
     }
 
     return (
+        <>
+        { width > breakpoint ?
         <ContentBlock>
+            { !logged ?
+            <NotAuthorizedView/>
+            :
+            <>
             <TaskUpper>
                 <motion.div
                     initial = {{ x: "-30%", opacity: 0 }}
@@ -151,7 +186,45 @@ function TaskDetails() {
                 </div>
             </TaskUpper>
             <TaskReadings />
+            </> }
         </ContentBlock>
+        : 
+        <MobileContentBlock>
+            { !logged ?
+            <NotAuthorizedView/>
+            :
+            <>
+            <TaskUpper>
+                <motion.div
+                    initial = {{ x: "-30%", opacity: 0 }}
+                    animate = {{ x: !dismiss ? "0%" : "-30%", opacity: !dismiss ? 1 : 0 }}
+                    transition = {{ duration: 0.3, type: "spring" }}>
+                    <MobileTaskHeader>{task}</MobileTaskHeader>
+                    <DownloadFileButton style={{float: "left"}} onClick={generateZip}> 
+                        <span className={styles.DownloadSpan}>. zip</span>
+                    </DownloadFileButton>
+                </motion.div>
+                <div style={{width: "100%"}}>
+                    <motion.div
+                        initial = {{ x: "30%", opacity: 0 }}
+                        animate = {{ x: !dismiss ? "0%" : "30%", opacity: !dismiss ? 1 : 0 }}
+                        transition = {{ duration: 0.3, delay: 0.2 }}>
+                        <MobileTaskDateLabel>First log:</MobileTaskDateLabel>
+                        <MobileTaskDate>{firstLog.toLocaleString()}</MobileTaskDate>
+                    </motion.div>
+                    <motion.div
+                        initial = {{ x: "30%", opacity: 0 }}
+                        animate = {{ x: !dismiss ? "0%" : "30%", opacity: !dismiss ? 1 : 0 }}
+                        transition = {{ duration: 0.3, delay: 0.4 }}>
+                        <MobileTaskDateLabel className="mt-2">Last log:</MobileTaskDateLabel>
+                        <MobileTaskDate>{lastLog.toLocaleString()}</MobileTaskDate>
+                    </motion.div>
+                </div>
+            </TaskUpper>       
+            <TaskReadings />    
+            </> }
+        </MobileContentBlock> }
+        </>
     )
 }
 

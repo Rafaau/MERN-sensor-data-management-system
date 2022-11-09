@@ -1,8 +1,6 @@
 const express = require("express")
 const bodyParser = require("body-parser");
 const cors = require("cors")
-const http = require("http")
-const fs = require("fs")
 
 const db = require("./db")
 const seedDB = require("./db/seeder")

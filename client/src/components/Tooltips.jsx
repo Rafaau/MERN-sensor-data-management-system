@@ -22,7 +22,13 @@ const Tooltips = () => {
             </ReactTooltip> 
             <ReactTooltip id="MoveBundle" type="dark" effect="solid">
                 <span>Move bundle</span>
-            </ReactTooltip>          
+            </ReactTooltip>      
+            <ReactTooltip id="NotShared" type="dark" effect="solid">
+                <span>Share</span>
+            </ReactTooltip>  
+            <ReactTooltip id="Shared" type="dark" effect="solid">
+                <span>Don't share</span>
+            </ReactTooltip>      
         </>                    
     )
 }

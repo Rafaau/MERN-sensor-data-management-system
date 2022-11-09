@@ -12,6 +12,7 @@ const SensorData = new Schema(
         sensorlabels: { type: String, required: true},
         sensorvalues: { type: String, required: true},
         task: { type: String, required: false },
+        isShared : { type: Boolean, required: false },
     },
     { timestamps: true },
 )

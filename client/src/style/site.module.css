@@ -159,6 +159,16 @@ body {
     margin-right: 2vw;
 }
 
+.MobileSolutionStepImage {
+    width: 80%;
+    margin-left: 1vw;
+}
+
+.MobileCenterButtons {
+    position: relative;
+    left: 23vw;
+}
+
 .ListCell {
 
     font-size: 1.25vw;
@@ -190,8 +200,7 @@ body {
     color: #7e7e7e;
     padding-left: 2vw;
     font-family: Trebuchet MS, sans-serif;
-    font-size: 2vw;
-    font-weight: lighter;
+    font-size: 4vw;
     padding-bottom: 1vh;
     padding-top: 2vh;
     border-bottom: solid 1px rgb(228, 228, 228);
@@ -199,7 +208,7 @@ body {
 
 .MobileListCell {
 
-    font-size: 2.5vw;
+    font-size: 4vw;
     width: 50%;
     padding-right: 2vw;
 }
@@ -814,4 +823,18 @@ body {
 
 .BundleLabel {
     margin-top: 5vh;
+}
+
+.TemplateTable {
+    border: 1px solid; 
+    width: 80%;
+    margin-top: 1vw;
+    margin-bottom: 2vw;
+    margin-left: 3vw;
+    transition: 0.2s;
+    cursor: pointer;
+}
+
+.TemplateTable:hover {
+    transform: scale(1.05);
 }

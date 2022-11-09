@@ -157,8 +157,6 @@ const MobileHomeDescription = styled.div.attrs({
     font-family: Trebuchet MS, sans-serif;
     color: #4F4F4F;
     font-size: 5vw;
-    position: absolute;
-    top: 14vh;
     text-align: left;
     margin-left: 8vw;
     width: 80%;
@@ -188,12 +186,13 @@ const MobileListTotal = styled.div.attrs({
 
 })`
     padding: 1vw;
-    padding-top: 7.5vw;
+    padding-top: 5vw;
+    padding-bottom: 5vw;
     padding-right: 4vw;
     font-family: Trebuchet MS, sans-serif;
     font-weight: bold;
     color: #7e7e7e;
-    font-size: 3vw;
+    font-size: 5vw;
     width: 50%;
     text-align: right;
 `
@@ -212,29 +211,32 @@ const MobileTableFooter = styled.div.attrs({
 })`
     width: 100%;
     position: absolute;
-    bottom: -4vh;
     display: flex;
     justify-content: center;
+    margin-top: 3vh;
 `
 
 const MobilePreviousPage = styled.div.attrs({
     className: "fa-solid fa-arrow-left"
 })`
+    margin-left: 10vw;
+    margin-bottom: 3vh;
     color: #7e7e7e;
-    font-size: 4vw;
-    width: 5%;
-    text-align: right;
-    padding-right: 12vw;
+    font-size: 7vw;
+    text-align: left;
+    width: 100%;
     cursor: pointer;
 `
 
 const MobileNextPage = styled.div.attrs({
     className: "fa-solid fa-arrow-right"
 })`
+    margin-right: 10vw;
+    margin-bottom: 3vh;
     color: #7e7e7e;
-    font-size: 4vw;
-    width: 5%;
-    text-align: left;
+    font-size: 7vw;
+    width: 100%;
+    text-align: right;
     cursor: pointer;
 `
 
@@ -244,10 +246,10 @@ const MobileEmptyListMessage = styled.div.attrs({
     font-family: Trebuchet MS, sans-serif;
     font-weight: bold;
     color: #7e7e7e;
-    font-size: 3vw;
-    position: absolute;
-    top: 40%;
+    font-size: 4vw;
     text-align: center;
+    margin-top: 3vh;
+    margin-bottom: 3vh;
     width: 100%;
 `
 
@@ -276,7 +278,7 @@ const MobileInsertIcon = styled.button.attrs({
     className: "fa-solid fa-table-list"
 })`
     width: 40%;
-    background-color: white;
+    background-color: rgba(0,0,0,0);
     color: #ff5900;
     border: none;
     font-size: 10vw;
@@ -296,7 +298,7 @@ const MobileDropboxIcon = styled.button.attrs({
     className: "fa-brands fa-dropbox"
 })`
     width: 40%;
-    background-color: white;
+    background-color: rgba(0,0,0,0);
     color: #ff5900;
     border: none;
     font-size: 10vw;
@@ -443,10 +445,9 @@ const MobileNameLabel = styled.div.attrs({
     color: #7E7E7E;
     font-family: Trebuchet MS, sans-serif;
     font-weight: bold;
-    font-size: 3vw;
+    font-size: 5vw;
     margin-top: 3.3vh;
-    margin-left: 5vw;
-    margin-right: 2vw;
+    text-align: center;
 `
 
 const MobileBackButton = styled.button.attrs({
@@ -472,12 +473,11 @@ const MobileActionButton = styled.button.attrs({
     color: #ff5900; 
     font-family: Trebuchet MS, sans-serif;
     font-weight: bold;
-    font-size: 3vw; 
+    font-size: 5vw; 
     border: 2px solid #ff5900; 
-    height: 50%;
-    margin-top: 3vh;
-    margin-right: 3vw;
-    width: 40%;
+    height: auto;
+    margin-top: 7vh;
+    width: 50%;
     background-color: white;
     transition: 0.25s;
     &:hover, focus {
@@ -503,16 +503,15 @@ const MobileFileRow = styled.div.attrs({
 const MobileFileContainer = styled.label.attrs({
 
 })`
-    margin-top: 6%;
-    margin-left: 15vw;
-    width: 17%;
-    cursor: pointer;
+    text-align: center;
+    width: 100%;
+    margin-top: 10vh;
 `
 
 const MobilePcIcon = styled.span.attrs({
     className: "fa-sharp fa-solid fa-desktop"
 })`
-    font-size: 20vw;
+    font-size: 30vw;
     color: #ff5900; 
 `
 
@@ -523,9 +522,8 @@ const MobileFileLabel = styled.div.attrs({
     font-family: Trebuchet MS, sans-serif;
     font-weight: bold;
     font-size: 5vw;
-    margin-left: 5vw;
-    margin-top: 1vh;
-    width: 50%;
+    margin-top: 2vh;
+    width: 100%;
     text-align: center;
 `
 
@@ -533,14 +531,13 @@ const MobilePcFileSpanIcon = styled.span.attrs({
     className: "fa-solid fa-file-csv"
 })`
     position: absolute;
-    top: 5vh;
-    left: -7vw;
-    width: 30%;
+    left: 23%;
+    padding: 0.5vw;
     background-color: white;
     color: #ff5900;
     filter: drop-shadow(3px 3px 0 white) 
     drop-shadow(-3px -3px 0 white);
-    font-size: 10vw;
+    font-size: 15vw;
 `
 
 const MobileDropboxRow = styled.div.attrs({
@@ -563,9 +560,7 @@ const MobileDropboxContainer = styled.div.attrs({
     color: #ff5900; 
     background-color: white;
     text-align: center;
-    margin-top: 6%;
-    margin-left: 10vw;
-    width: 17%;
+    width: 100%;
     cursor: pointer;
 `
 
@@ -576,7 +571,7 @@ const MobileDropboxButton = styled.button.attrs({
     border: none;
     color: #ff5900; 
     background-color: white;
-    font-size: 22vw;
+    font-size: 30vw;
 `
 
 const MobileDropboxFile = styled.div.attrs({
@@ -586,9 +581,8 @@ const MobileDropboxFile = styled.div.attrs({
     font-family: Trebuchet MS, sans-serif;
     font-weight: bold;
     font-size: 5vw;
-    margin-left: 5vw;
-    margin-top: 3.5vh;
-    width: 60%;
+    margin-top: 5vh;
+    width: 100%;
     text-align: center;
 `
 
@@ -638,9 +632,8 @@ const MobileJsonInfo = styled.div.attrs({
 const MobileJsonTextArea = styled.textarea.attrs({
 
 })`
-    position: absolute;
-    left: 10%;
-    top: 5vh;
+    margin-left: 9vw;
+    margin-top: 10vh;
     height: 40vh;
     width: 100%;
     resize: none;
@@ -653,7 +646,6 @@ const MobileValidationMessage = styled.div.attrs({
     color: #DC0000;
     font-family: Trebuchet MS, sans-serif;
     font-size: 4vw;
-    margin-top: 45vh;
     margin-left: 6vw;
 `
 
@@ -881,6 +873,213 @@ const MobileAuthMessage = styled.div.attrs({
     margin-top: 10%;
 `
 
+const MobileGroupListLabel = styled.div.attrs({
+
+})`
+    padding: 3vw;
+    padding-inline: 4vw;
+    font-weight: bold;
+    font-family: Trebuchet MS, sans-serif;
+    color: #7e7e7e;
+    background-color: #F0F0F0;
+    font-size: 5vw;
+    -webkit-box-shadow: 0px 2px 9px -3px rgba(66, 68, 90, 1);
+    -moz-box-shadow: 0px 2px 9px -3px rgba(66, 68, 90, 1);
+    box-shadow: 0px 2px 9px -3px rgba(66, 68, 90, 1);
+    margin-top: 1vh;
+    margin-bottom: 1vh;
+`
+
+const MobileExpandIcon = styled.div.attrs({
+    className: "fa-solid fa-chevron-down"
+})`
+    float: right;
+    padding-top: 0.1vw;
+    font-size: 5vw;
+    cursor: pointer;
+`
+
+const MobileCollapseIcon = styled.div.attrs({
+    className: "fa-solid fa-chevron-up"
+})`
+    float: right;
+    padding-top: 0.1vw;
+    font-size: 5vw;
+    cursor: pointer;
+`
+
+const MobileDeleteGray = styled.div.attrs({
+    className: "fa-solid fa-trash-can"
+})`
+    float: right;
+    padding-top: 0.5vw;
+    padding-right: 5vw;
+    font-size: 5vw;
+    cursor: pointer;
+    transition: 0.2s;
+    &:hover {
+        transform: scale(1.2);
+        padding-top: 0.3vw;
+        padding-right: 1.3vw;
+    }
+`
+
+const MobileTaskTab = styled.div.attrs({
+
+})`
+    padding: 1vw;
+    width: 100%;
+    height: auto;
+    margin-right: 12vw;
+    margin-bottom: 2vw;
+    font-family: Trebuchet MS, sans-serif;
+    color: #7e7e7e;
+    background-color: #F0F0F0;
+    -webkit-box-shadow: 0px 2px 9px -3px rgba(66, 68, 90, 1);
+    -moz-box-shadow: 0px 2px 9px -3px rgba(66, 68, 90, 1);
+    box-shadow: 0px 2px 9px -3px rgba(66, 68, 90, 1);
+    transition: 0.2s;
+    cursor: pointer;
+    &:hover {
+        transform: scale(1.1);
+    }
+`
+
+const MobileTaskContainer = styled.div.attrs({
+
+})`
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    margin-left: 3vw;
+`
+
+const MobileTaskLabel = styled.div.attrs({
+
+})`
+    font-weight: bold;
+    font-size: 5vw;
+`
+
+const MobileSensorUl = styled.div.attrs({
+
+})`
+    font-size: 4vw;
+`
+
+const MobileSensorLi = styled.div.attrs({
+
+})`
+    font-size: 3vw;
+    padding-left: 0.5vw;
+`
+
+const MobileTaskDateLabel = styled.div.attrs({
+
+})`
+    font-size: 4vw;
+    text-align: right;
+    font-weight: bold;
+    color: #7e7e7e;
+`
+
+const MobileTaskDate = styled.div.attrs({
+
+})`
+    font-size: 3vw;
+    text-align: right;
+`
+
+const MobileTaskReadingTab = styled.div.attrs({
+
+})`
+    margin-bottom: 2vh;
+    padding: 3vw;
+    width: 100%;
+    height: auto;
+    font-family: Trebuchet MS, sans-serif;
+    color: #7e7e7e;
+    font-size: 5vw;
+    background-color: #F0F0F0;
+    -webkit-box-shadow: 0px 2px 9px -3px rgba(66, 68, 90, 1);
+    -moz-box-shadow: 0px 2px 9px -3px rgba(66, 68, 90, 1);
+    box-shadow: 0px 2px 9px -3px rgba(66, 68, 90, 1);
+    cursor: pointer;
+    transition: 0.2s;
+    &:hover {
+        background-color: #E8E8E8;
+        font-weight: bold;
+    }
+`
+
+const MobileTaskHeader = styled.div.attrs({
+
+})`
+    font-family: Trebuchet MS, sans-serif;
+    font-size: 8vw;
+    padding: 3vh;
+    font-weight: bold;
+    color: #4F4F4F;
+`
+
+const MobileTaskUpper = styled.div.attrs({
+
+})`
+    padding: 2vw;
+    display: flex;
+`
+
+const MobileSolutionButton = styled.div.attrs({
+    className: "fa-solid fa-circle-question"
+})`
+    font-size: 10vw;
+    padding: 3vh;
+    color: #7e7e7e;
+    position: absolute;
+    top: 0;
+    right: 0;
+    transition: 0.2s;
+    cursor: pointer;
+    &:hover {
+        transform: scale(1.2);
+    }
+`
+
+const MobileSolutionStep = styled.div.attrs({
+
+})`
+    margin-bottom: 5vw;
+    width: 100%;
+    padding-inline: 2%;
+    display: flex;
+`
+
+const MobileSolutionStepDescription = styled.div.attrs({
+
+})`
+    font-family: Trebuchet MS, sans-serif;
+    font-weight: bold;
+    color: #4F4F4F;
+    font-size: 4vw;
+    padding-inline: 2vh;
+    padding: 1vh;
+`
+
+const MobileDeleteTask = styled.div.attrs({
+    className: "fa-solid fa-trash-can"
+})`
+    float: right;
+    padding-right: 2.5vw;
+    padding-top: 1vw;
+    font-size: 4vw;
+    cursor: pointer;
+    transition: 0.2s;
+    &:hover {
+        transform: scale(1.2);
+        padding-top: 0.7vw;
+    }
+`
+
 export {
     UpperContainer,
     UpperNav,
@@ -951,4 +1150,22 @@ export {
     MobileAuthSubmit,
     MobileAuthView,
     MobileGoogleIcon,
-    MobileAuthMessage,}
+    MobileAuthMessage,
+    MobileGroupListLabel,
+    MobileCollapseIcon,
+    MobileExpandIcon,
+    MobileDeleteGray,
+    MobileTaskContainer,
+    MobileSensorLi,
+    MobileSensorUl,
+    MobileSolutionButton,
+    MobileSolutionStep,
+    MobileSolutionStepDescription,
+    MobileTaskDate,
+    MobileTaskDateLabel,
+    MobileTaskHeader,
+    MobileTaskLabel,
+    MobileTaskReadingTab,
+    MobileTaskTab,
+    MobileTaskUpper,
+    MobileDeleteTask,}

@@ -14,72 +14,10 @@ import { useSortBy, useTable, usePagination } from "react-table"
 import JSZip from "jszip"
 import { saveAs } from "file-saver"
 
-function Table({columns, data}) {
-    const didMount = useRef(true)
-    const [helper, invokeHelper] = useState(1)
-    const [show, setShow] = useState(false)
-    const [readingObj, passReadingObj] = useState({})
-
-    const {
-        getTableProps,
-        getTableBodyProps,
-        headerGroups,
-        page,
-        nextPage,
-        previousPage,
-        canNextPage,
-        canPreviousPage,
-        prepareRow,
-
-    } = useTable({ columns, data, initialState: { pageSize: 5 } }, useSortBy, usePagination)
-
-    return (
-        <>
-        <div>
-            <table {...getTableProps()} className={styles.ListTable}>
-                <thead>
-                    {headerGroups.map(headerGroup => (
-                        <tr {...headerGroup.getHeaderGroupProps()}>
-                            {headerGroup.headers.map(column => (
-                                <th {...column.getHeaderProps(column.getSortByToggleProps())} className={styles.ListHeader}>
-                                    {column.render('Header')}
-                                </th>
-                    ))}
-                </tr>
-            ))}
-          </thead>
-          <tbody {...getTableBodyProps()}>
-          {page.map(row => {
-            prepareRow(row)
-            return (
-                <tr {...row.getRowProps()} className={styles.ListTr}>
-                  {row.cells.map(cell => {
-                    return (
-                        <td {...cell.getCellProps()} className={styles.ListCell}>
-                          {cell.render('Cell')}
-                        </td>
-                    )
-                  })}
-                </tr>
-            )
-          })}
-          </tbody>
-        </table>
-        </div>   
-        <TableFooter>
-            { canPreviousPage ?
-            <PreviousPage onClick={() => previousPage()} disabled={!canPreviousPage}></PreviousPage>
-            : null }
-            { canNextPage ? 
-            <NextPage onClick={() => nextPage()} disabled={!canNextPage}></NextPage>
-            : null }
-        </TableFooter> 
-      </>       
-    )
-}
-
 function SensorDataBundleDetails(callback) {
     const didMount = useRef(true)
+    const [user, setUser] = useState({})
+    const [logged, setLogged] = useState(false)
     const [readings, setReadings] = useState([])
     const [currentBundle, setCurrentBundle] = useState({})
     const [noReadingsView, setNoReadingsView] = useState(false)
@@ -95,6 +33,16 @@ function SensorDataBundleDetails(callback) {
     const zip = new JSZip()
 
     useEffect(() => {
+        async function getUser() {
+            const loggedInUser = localStorage.getItem("user")
+            if (loggedInUser) {
+                const foundUser = loggedInUser
+                const user = await api.getUserByEmail(JSON.parse(foundUser).email)
+                setUser(user.data.data)
+                setLogged(true)
+            }
+        }
+
         async function getReadings() {
             let response = { status: "" }
             try {
@@ -115,14 +63,24 @@ function SensorDataBundleDetails(callback) {
         }
 
         if (didMount.current) {
+            getUser()
             getReadings()
             getCurrentBundle()
             didMount.current = false
             return
         }
+
+        getUser()
         getReadings()
         getCurrentBundle()
     }, [helper])
+
+    useEffect(() => {
+        const handleWindowResize = () => setWidth(window.innerWidth)
+        window.addEventListener("resize", handleWindowResize)
+    
+        return () => window.removeEventListener("resize", handleWindowResize)
+    }, [])
 
     const generateZip = async () => {
         let zipFile = zip
@@ -225,24 +183,11 @@ function SensorDataBundleDetails(callback) {
             Cell: function(props) {
                 return (
                     <>
-                        <RemoveButton id="test-remove-button" data-tip data-for="DeleteReading" onClick={() => {handleShow(props.row.original)}}/>
-                        <Tooltips/>
-                        <Modal show={show} onHide={handleClose} animation={true} centered backdrop="static" backdropClassName={styles.ModalBackdrop}>
-                            <Modal.Header closeButton>
-                                <h4>Confirm reading delete</h4>
-                            </Modal.Header>
-                            <Modal.Body>
-                                Are you sure you want to permanent remove this reading from list?
-                            </Modal.Body>
-                            <Modal.Footer>
-                                <button onClick={handleClose} className={styles.CancelButton}>
-                                    Cancel
-                                </button>
-                                <button id="test-confirm-button" onClick={(e) => {deleteReading(e, readingObj.uuid)}} className={styles.DeleteButton}>
-                                    Delete
-                                </button>
-                            </Modal.Footer>
-                        </Modal>   
+                        { props.row.original.userId == user._id ?
+                        <>
+                            <RemoveButton id="test-remove-button" data-tip data-for="DeleteReading" onClick={() => {handleShow(props.row.original)}}/>
+                            <Tooltips/>  
+                        </> : null }
                     </>     
                 )             
         },
@@ -250,7 +195,13 @@ function SensorDataBundleDetails(callback) {
     ]
 
     return (
+        <>
+        { width > breakpoint ?
         <ContentBlock>
+            { !logged ?
+                <NotAuthorizedView/>
+                :
+                <>
                 { !noReadingsView ?
                 <>
                     <motion.div
@@ -286,7 +237,188 @@ function SensorDataBundleDetails(callback) {
                         You didn't insert any reading yet
                     </EmptyListMessage>
                 </motion.div> }
+                </> }
         </ContentBlock>
+        :
+        <MobileContentBlock>
+                { !logged ?
+                    <NotAuthorizedView/>
+                :
+                <>
+                { !noReadingsView ?
+                <>
+                    <motion.div
+                        initial = {{ opacity: 0, y: "-20%" }}
+                        animate = {{ opacity: 1, y: "0%" }}
+                        >
+                        <ListRow>
+                            <MobileListHeader>
+                                {currentBundle.name} readings
+                            </MobileListHeader>
+                            <DownloadFileButton style={{ width: "100px", marginTop: "2vw" }} onClick={generateZip}>
+                                <span className={styles.DownloadSpan}>. zip</span>
+                            </DownloadFileButton>
+                            <MobileListTotal>
+                                Total: {distinctedByUuid.length}
+                            </MobileListTotal>
+                        </ListRow>
+                    </motion.div>     
+                    <motion.div
+                        initial = {{ opacity: 0, y: "-100%" }}
+                        animate = {{ opacity: 1, y: "0%" }}
+                        transition = {{ delay: 0.2 }}>
+                        <MobileTable 
+                            columns = { columns } 
+                            data = { data } />  
+                    </motion.div>               
+                </>
+                :
+                <motion.div
+                    initial = {{ opacity: 0 }}
+                    animate = {{ opacity: 1 }}>
+                    <MobileEmptyListMessage style={{marginTop: "20%"}}>
+                        You didn't insert any reading yet
+                    </MobileEmptyListMessage>
+                </motion.div> }
+                </> }
+        </MobileContentBlock> }
+
+        <Modal show={show} onHide={handleClose} animation={true} centered backdrop="static" backdropClassName={styles.ModalBackdrop}>
+            <Modal.Header closeButton>
+                <h4>Confirm reading delete</h4>
+            </Modal.Header>
+            <Modal.Body>
+                Are you sure you want to permanent remove this reading from list?
+            </Modal.Body>
+            <Modal.Footer>
+                <button onClick={handleClose} className={styles.CancelButton}>
+                    Cancel
+                </button>
+                <button id="test-confirm-button" onClick={(e) => {deleteReading(e, readingObj.uuid)}} className={styles.DeleteButton}>
+                    Delete
+                </button>
+            </Modal.Footer>
+        </Modal> 
+        </>
+    )
+}
+
+function MobileTable({columns, data}) {
+
+    const {
+        getTableProps,
+        getTableBodyProps,
+        headerGroups,
+        page,
+        nextPage,
+        previousPage,
+        canNextPage,
+        canPreviousPage,
+        prepareRow,
+
+    } = useTable({ columns, data, initialState: { pageSize: 11 } }, useSortBy, usePagination)
+
+    return (
+        <>
+        <div>
+            <table {...getTableProps()} className={styles.MobileListTable}>
+                <thead>
+                    {headerGroups.map(headerGroup => (
+                        <tr {...headerGroup.getHeaderGroupProps()}>
+                            {headerGroup.headers.map(column => (
+                                <th {...column.getHeaderProps(column.getSortByToggleProps())} className={styles.MobileListHeader}>
+                                    {column.render('Header')}
+                                </th>
+                    ))}
+                </tr>
+            ))}
+          </thead>
+          <tbody {...getTableBodyProps()}>
+          {page.map(row => {
+            prepareRow(row)
+            return (
+                <tr {...row.getRowProps()} className={styles.MobileListTr}>
+                  {row.cells.map(cell => {
+                    return (
+                        <td {...cell.getCellProps()} className={styles.MobileListCell}>
+                          {cell.render('Cell')}
+                        </td>
+                    )
+                  })}
+                </tr>
+            )
+          })}
+          </tbody>
+        </table>
+        </div>   
+        <MobileTableFooter>
+        { canPreviousPage ?
+            <MobilePreviousPage onClick={() => previousPage()} disabled={!canPreviousPage}/>
+            : null }
+            { canNextPage ?
+            <MobileNextPage onClick={() => nextPage()} disabled={!canNextPage}/>
+            : null }
+        </MobileTableFooter> 
+      </>       
+    )
+} 
+
+function Table({columns, data}) {
+    const {
+        getTableProps,
+        getTableBodyProps,
+        headerGroups,
+        page,
+        nextPage,
+        previousPage,
+        canNextPage,
+        canPreviousPage,
+        prepareRow,
+
+    } = useTable({ columns, data, initialState: { pageSize: 5 } }, useSortBy, usePagination)
+
+    return (
+        <>
+        <div>
+            <table {...getTableProps()} className={styles.ListTable}>
+                <thead>
+                    {headerGroups.map(headerGroup => (
+                        <tr {...headerGroup.getHeaderGroupProps()}>
+                            {headerGroup.headers.map(column => (
+                                <th {...column.getHeaderProps(column.getSortByToggleProps())} className={styles.ListHeader}>
+                                    {column.render('Header')}
+                                </th>
+                    ))}
+                </tr>
+            ))}
+          </thead>
+          <tbody {...getTableBodyProps()}>
+          {page.map(row => {
+            prepareRow(row)
+            return (
+                <tr {...row.getRowProps()} className={styles.ListTr}>
+                  {row.cells.map(cell => {
+                    return (
+                        <td {...cell.getCellProps()} className={styles.ListCell}>
+                          {cell.render('Cell')}
+                        </td>
+                    )
+                  })}
+                </tr>
+            )
+          })}
+          </tbody>
+        </table>
+        </div>   
+        <TableFooter>
+            { canPreviousPage ?
+            <PreviousPage onClick={() => previousPage()} disabled={!canPreviousPage}></PreviousPage>
+            : null }
+            { canNextPage ? 
+            <NextPage onClick={() => nextPage()} disabled={!canNextPage}></NextPage>
+            : null }
+        </TableFooter> 
+      </>       
     )
 }
 

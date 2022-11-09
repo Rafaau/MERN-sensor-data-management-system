@@ -6,6 +6,7 @@ import { MobileAccountMenu } from "../mobile-components"
 import { motion } from "framer-motion"
 import styles from "../style/site.module.css"
 import logo from "../style/images/logo.png"
+import { NavStreamIcon } from "../style/styled-components"
 
 function MobileUpperNavBar() {
     const didMount = useRef(true)
@@ -93,7 +94,7 @@ function MobileUpperNavBar() {
                             <motion.div 
                                 className = {styles.MobileUnderline}
                                 initial = {{ opacity: 0 }}
-                                animate = {{ opacity: currentPage == "/sensordata/insert" ? 1 : 0, x: currentPage == "/sensordata/list" ? -100 : 0 }}
+                                animate = {{ opacity: currentPage == "/sensordata/insert" ? 1 : 0, x: currentPage == "/sensordata/list" ? -100 : currentPage == "/sensordata/collector" ? 100 : 0 }}
                                 transition = {{ duration: 0.2 }}>
                             </motion.div>
                             <motion.div
@@ -102,6 +103,21 @@ function MobileUpperNavBar() {
                                 transition = {{ duration: 0.1 }}>
                                 <NavChartIcon/>
                                 <Link to="/sensordata/insert" className="nav-link" onClick={invokeStateChange}>Insert</Link>
+                            </motion.div>
+                        </NavElement>
+                        <NavElement>
+                            <motion.div 
+                                className = {styles.MobileUnderline}
+                                initial = {{ opacity: 0 }}
+                                animate = {{ opacity: currentPage == "/sensordata/collector" ? 1 : 0, x: currentPage == "/" ? -300 : currentPage == "/sensordata/list" ? -200 : currentPage == "/sensordata/insert" ? - 100 : 0 }}
+                                transition = {{ duration: 0.2 }}>
+                            </motion.div>
+                            <motion.div
+                                className = {styles.FlexFix}
+                                animate = {{ "color": currentPage == "/sensordata/collector" ? "#ff5900" : "#4F4F4F" }}
+                                transition = {{ duration: 0.1 }}>
+                                <NavStreamIcon/>
+                                <Link to="/sensordata/collector" className="nav-link" onClick={invokeStateChange}>Insert</Link>
                             </motion.div>
                         </NavElement>
                         <UserIcon onClick={handleShowAccountDetails}/>

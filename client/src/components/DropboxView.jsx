@@ -26,6 +26,8 @@ import api from "../api"
 import { v4 as uuidv4 } from "uuid"
 import { useSnackbar } from "react-simple-snackbar"
 import Options from "../style/options.js"
+import Modal from "react-bootstrap/Modal"
+import Select from "react-select"
 
 const DropboxView = (callback) => {
     const didMount = useRef(true)
@@ -53,15 +55,36 @@ const DropboxView = (callback) => {
     const [renderChart, setRenderChart] = useState(true)
     const [dismiss, setDismiss] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [showModal, setShowModal] = useState(false)
+    const [template, setTemplate] = useState("")
     var optionsInstance = new Options()
     const [openSuccessSnackbar, closeSuccessSnackbar] = useSnackbar(optionsInstance.successSnackbarOptions)
     const [openErrorSnackbar, closeErrorSnackbar] = useSnackbar(optionsInstance.errorSnackbarOptions)
+    const [showBundleModal, setShowBundleModal] = useState(false)
+    const [bundleSelect, setBundleSelect] = useState([])
+    const [selectValue, setSelectValue] = useState("")
+    const [readingBundles, setReadingBundles] = useState([])
     const [width, setWidth] = useState(window.innerWidth)
     const breakpoint = 620;
     const APP_KEY = process.env.REACT_APP_DROPBOX_APP_KEY
 
     useEffect(() => {     
+        async function getReadingBundles() {
+            let response = { status: "" }
+            try {
+                const userModel = JSON.parse(localStorage.getItem("userModel"))
+                response = await api.getBundlesByUserId(userModel._id)
+            } catch (err) {
+                console.log("bundles not found")
+            } finally {
+                if (response.status == 200) {
+                    setReadingBundles(response.data.data)
+                }
+            }
+        }
+
         if (didMount.current ) {
+            getReadingBundles()
             didMount.current = false
             return
         }
@@ -127,29 +150,123 @@ const DropboxView = (callback) => {
         }
     }
 
+    const handleFirstTemplateChoice = () => {
+        setTemplate("first")
+        setShowModal(false)
+        setupData()
+    }
+
+    const handleSecondTemplateChoice = () => {
+        setTemplate("second")
+        setShowModal(false)
+        setupData()
+    }
+
+    const handleThirdTemplateChoice = () => {
+        setTemplate("third")
+        setShowModal(false)
+        setupData()
+    }
+
+    const handleFourthTemplateChoice = () => {
+        setTemplate("fourth")
+        setShowModal(false)
+        setupData()
+    }
+
+    const handleShowModal = () => {
+        setShowModal(true)
+    }
+
+    const handleCloseModal = () => {
+        setShowModal(false)
+        setLoading(false)
+    }
+
     const setupData = async () => {
         if (dropboxFile) {
             setLoading(true)
-            console.log("not done")
             const urlObj = { link: dropboxFile.link }
             const downloadResponse = await api.downloadFile(urlObj)
             if (downloadResponse.status == 200)
             {
                 const readResponse = await api.readFile(dropboxFile.name)
                 const csvOutput = readResponse.data.data
-                const csvHeaders = Object.keys(csvOutput[0])
-                const csvLabels = csvHeaders.slice(2)
+                const csvHeaders = Object.keys(csvOutput[0]) 
+                if (csvHeaders[csvHeaders.length - 1] == undefined 
+                    || csvHeaders[csvHeaders.length - 1] == ""
+                    || csvHeaders[csvHeaders.length - 1] == "\r")
+                    csvHeaders.pop()
+                if (template == "") {
+                    if (csvHeaders[0] != "Timestamp" || csvHeaders[1] != "Milliseconds") {
+                        handleShowModal()
+                        return
+                    }
+                }
                 setRowsCount(csvOutput.length)
                 setLabelCount(csvHeaders.length - 2)
                 for (let i = 0; i < csvOutput.length; i++) {
-                    timestamps[i] = Object.entries(csvOutput[i]).slice(0,1).map(entry => entry[1])[0]
-                    milliSeconds[i] = parseFloat(Object.entries(csvOutput[i]).slice(1,2).map(entry => entry[1])).toFixed(2)
-                    sensorValue1[i] = (Object.entries(csvOutput[i]).slice(2,3).map(entry => entry[1])).toString().replace(/[^\d.-]/g, "")
-                    sensorValue2[i] = (Object.entries(csvOutput[i]).slice(3,4).map(entry => entry[1])).toString().replace(/[^\d.-]/g, "")
-                    sensorValue3[i] = (Object.entries(csvOutput[i]).slice(4).map(entry => entry[1])).toString().replace(/[^\d.-]/g, "")
+                    if (template == "second" || template == "first" || template == "") {
+                        if (template == "second") {
+                            timestamps[i] = Object.entries(csvOutput[i]).slice(1,2).map(entry => entry[1])[0]
+                            milliSeconds[i] = parseFloat(Object.entries(csvOutput[i]).slice(0,1).map(entry => entry[1])).toFixed(2)
+                        } else {
+                            timestamps[i] = Object.entries(csvOutput[i]).slice(0,1).map(entry => entry[1])[0]
+                            milliSeconds[i] = parseFloat(Object.entries(csvOutput[i]).slice(1,2).map(entry => entry[1])).toFixed(2)
+                        }
+                        sensorValue1[i] = (Object.entries(csvOutput[i]).slice(2,3).map(entry => entry[1])).toString().replace(/[^\d.-]/g, "")
+                        sensorValue2[i] = (Object.entries(csvOutput[i]).slice(3,4).map(entry => entry[1])).toString().replace(/[^\d.-]/g, "")
+                        sensorValue3[i] = (Object.entries(csvOutput[i]).slice(4).map(entry => entry[1])).toString().replace(/[^\d.-]/g, "")
+                    } else if (template == "third") {
+                        if (csvHeaders.length == 3) {
+                            timestamps[i] = Object.entries(csvOutput[i]).slice(1,2).map(entry => entry[1])[0]
+                            milliSeconds[i] = parseFloat(Object.entries(csvOutput[i]).slice(2,3).map(entry => entry[1])).toFixed(2)
+                            sensorValue1[i] = (Object.entries(csvOutput[i]).slice(0,1).map(entry => entry[1])).toString().replace(/[^\d.-]/g, "")
+                        }
+                        if (csvHeaders.length == 4) {
+                            timestamps[i] = Object.entries(csvOutput[i]).slice(2,3).map(entry => entry[1])[0]
+                            milliSeconds[i] = parseFloat(Object.entries(csvOutput[i]).slice(3,4).map(entry => entry[1])).toFixed(2)
+                            sensorValue1[i] = (Object.entries(csvOutput[i]).slice(0,1).map(entry => entry[1])).toString().replace(/[^\d.-]/g, "")
+                            sensorValue2[i] = (Object.entries(csvOutput[i]).slice(1,2).map(entry => entry[1])).toString().replace(/[^\d.-]/g, "")
+                        }
+                        if (csvHeaders.length == 5) {
+                            timestamps[i] = Object.entries(csvOutput[i]).slice(3,4).map(entry => entry[1])[0]
+                            milliSeconds[i] = parseFloat(Object.entries(csvOutput[i]).slice(4).map(entry => entry[1])).toFixed(2)
+                            sensorValue1[i] = (Object.entries(csvOutput[i]).slice(0,1).map(entry => entry[1])).toString().replace(/[^\d.-]/g, "")
+                            sensorValue2[i] = (Object.entries(csvOutput[i]).slice(1,2).map(entry => entry[1])).toString().replace(/[^\d.-]/g, "")
+                            sensorValue3[i] = (Object.entries(csvOutput[i]).slice(2,3).map(entry => entry[1])).toString().replace(/[^\d.-]/g, "")
+                        }
+                    } else if (template == "fourth") {
+                        if (csvHeaders.length == 3) {
+                            timestamps[i] = Object.entries(csvOutput[i]).slice(2,3).map(entry => entry[1])[0]
+                            milliSeconds[i] = parseFloat(Object.entries(csvOutput[i]).slice(1,2).map(entry => entry[1])).toFixed(2)
+                            sensorValue1[i] = (Object.entries(csvOutput[i]).slice(0,1).map(entry => entry[1])).toString().replace(/[^\d.-]/g, "")
+                        }
+                        if (csvHeaders.length == 4) {
+                            timestamps[i] = Object.entries(csvOutput[i]).slice(3,4).map(entry => entry[1])[0]
+                            milliSeconds[i] = parseFloat(Object.entries(csvOutput[i]).slice(2,3).map(entry => entry[1])).toFixed(2)
+                            sensorValue1[i] = (Object.entries(csvOutput[i]).slice(0,1).map(entry => entry[1])).toString().replace(/[^\d.-]/g, "")
+                            sensorValue2[i] = (Object.entries(csvOutput[i]).slice(1,2).map(entry => entry[1])).toString().replace(/[^\d.-]/g, "")
+                        }
+                        if (csvHeaders.length == 5) {
+                            timestamps[i] = Object.entries(csvOutput[i]).slice(4).map(entry => entry[1])[0]
+                            milliSeconds[i] = parseFloat(Object.entries(csvOutput[i]).slice(3,4).map(entry => entry[1])).toFixed(2)
+                            sensorValue1[i] = (Object.entries(csvOutput[i]).slice(0,1).map(entry => entry[1])).toString().replace(/[^\d.-]/g, "")
+                            sensorValue2[i] = (Object.entries(csvOutput[i]).slice(1,2).map(entry => entry[1])).toString().replace(/[^\d.-]/g, "")
+                            sensorValue3[i] = (Object.entries(csvOutput[i]).slice(2,3).map(entry => entry[1])).toString().replace(/[^\d.-]/g, "")
+                        }
+                    }
                     joinSensorValues(i)               
                 }
-                setSensorLabels({...sensorLabels, 0: csvLabels[0], 1: csvLabels[1], 2: csvLabels[2]})   
+                if (template == "third" || template == "fourth") {
+                    if (csvHeaders.length == 3) 
+                    setSensorLabels({...sensorLabels, 0: csvHeaders[0]})
+                    if (csvHeaders.length == 4)
+                        setSensorLabels({...sensorLabels, 0: csvHeaders[0], 1: csvHeaders[1]})
+                    if (csvHeaders.length == 5)
+                        setSensorLabels({...sensorLabels, 0: csvHeaders[0], 1: csvHeaders[1], 2: csvHeaders[2]})                  
+                } else
+                    setSensorLabels({...sensorLabels, 0: csvHeaders[2], 1: csvHeaders[3], 2: csvHeaders[4]})   
                 setName({ ...name, name: dropboxFile.name })
                 const mixed = [[].concat.apply([], sensorValue1),[].concat.apply([], sensorValue2),[].concat.apply([], sensorValue3)]
                 setValues(mixed)
@@ -157,7 +274,6 @@ const DropboxView = (callback) => {
                 merged  = merged.replace("undefined", "")
                 merged  = merged.replace("undefined", "")
                 setLabels(merged.split(","))
-                console.log("done")
                 setLoading(false)
                 setShowButtons(true)
             }
@@ -211,16 +327,17 @@ const DropboxView = (callback) => {
         if (sendWithBundle) {
             let getResponse = { status: "" }
             try {
-                getResponse = await api.getBundleByName(bundleName)
+                getResponse = await api.getBundleByName(selectValue)
             } catch (err) {
                 
             } finally {
-                if (getResponse.status == 200) {
+                if (getResponse.status == 200 && bundleName == "") {
                     bundleId = getResponse.data.data._id
                 } else {
                     let name = bundleName
                     const groupId = 0
-                    var bundle = { name, userId, groupId }
+                    const isShared = false
+                    var bundle = { name, userId, groupId, isShared }
                     var createResponse = await api.createBundle(bundle)
                     if (createResponse.status == 201)
                     bundleId = createResponse.data.id
@@ -277,35 +394,162 @@ const DropboxView = (callback) => {
         document.getElementById("dropbox-container").style.cursor = "default";
     }
 
+    const FirstTemplate = () => {
+        return (
+            <>
+                <table className={styles.TemplateTable} onClick={handleFirstTemplateChoice}>
+                    <thead>
+                        <th>Timestamp</th>
+                        <th>Milliseconds</th>
+                        <th>Value...</th>
+                    </thead>
+                    <tbody>
+                        <tr style = { { border: "1px solid" } }>
+                            <td>166674221</td>
+                            <td>0</td>
+                            <td>5.0...</td>
+                        </tr>
+                        <tr style = { { border: "1px solid" } }>
+                            <td>166674247</td>
+                            <td>101</td>
+                            <td>14.0...</td>
+                        </tr>
+                        <tr style = { { border: "1px solid" } }>
+                            <td>166674311</td>
+                            <td>202</td>
+                            <td>11.0...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </>
+        )
+    }
+
+    const SecondTemplate = () => {
+        return (
+            <>
+                <table className={styles.TemplateTable} onClick={handleSecondTemplateChoice}>
+                    <thead>
+                        <th>Milliseconds</th>
+                        <th>Timestamp</th>
+                        <th>Value</th>
+                    </thead>
+                    <tbody>
+                        <tr style = { { border: "1px solid" } }>
+                            <td>0</td>
+                            <td>166674221</td>
+                            <td>5.0</td>
+                        </tr>
+                        <tr style = { { border: "1px solid" } }>
+                            <td>101</td>
+                            <td>166674247</td>
+                            <td>14.0</td>
+                        </tr>
+                        <tr style = { { border: "1px solid" } }>
+                            <td>202</td>
+                            <td>166674311</td>
+                            <td>11.0</td>
+                        </tr>
+                    </tbody>
+                </table>           
+            </>
+        )
+    }
+
+    const ThirdTemplate = () => {
+        return (
+            <>
+                <table className={styles.TemplateTable} onClick={handleThirdTemplateChoice}>
+                    <thead>
+                        <th>Value...</th>
+                        <th>Timestamp</th>
+                        <th>Milliseconds</th>
+                    </thead>
+                    <tbody>
+                        <tr style = { { border: "1px solid" } }>
+                            <td>5.0...</td>
+                            <td>166674221</td>
+                            <td>0</td>
+                        </tr>
+                        <tr style = { { border: "1px solid" } }>
+                            <td>14.0...</td>
+                            <td>166674247</td>
+                            <td>101</td>
+                        </tr>
+                        <tr style = { { border: "1px solid" } }>
+                            <td>11.0...</td>
+                            <td>166674311</td>
+                            <td>202</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </>
+        )
+    }
+
+    const FourthTemplate = () => {
+        return (
+            <>
+                <table className={styles.TemplateTable} onClick={handleFourthTemplateChoice}>
+                    <thead>
+                        <th>Value...</th>
+                        <th>Milliseconds</th>
+                        <th>Timestamp</th>
+                    </thead>
+                    <tbody>
+                        <tr style = { { border: "1px solid" } }>
+                            <td>5.0...</td>
+                            <td>0</td>
+                            <td>166674221</td>
+                        </tr>
+                        <tr style = { { border: "1px solid" } }>
+                            <td>14.0...</td>
+                            <td>101</td>
+                            <td>166674247</td>
+                        </tr>
+                        <tr style = { { border: "1px solid" } }>
+                            <td>11.0...</td>
+                            <td>202</td>
+                            <td>166674311</td>
+                        </tr>
+                    </tbody>
+                </table>           
+            </>
+        )
+    }
+
+    const handleShowBundleModal = () => {
+        setSendWithBundle(true)
+        setShowBundleModal(true)
+        const options = []
+        readingBundles.forEach(bundle => {
+            options.push({ value: bundle._id, label: bundle.name })
+        })
+        setBundleSelect(options)
+    }
+    
+    const handleOnSelectChange = event => {
+        setSelectValue(event.label)
+    }
+
+    const handleCloseBundleModal = () => {
+        setSendWithBundle(false)
+        setShowBundleModal(false)
+    }
+
     return (
         <>
+        { width > breakpoint ?
         <motion.div
             initial = {{ opacity: 1, y: 0 }}
             animate = {{ opacity: dismiss ? 0 : 1, y: dismiss ? 500 : 0 }}
-            transition = {{ duration: 0.4 }}>  
-            { previewView ?
-                <motion.div
-                    initial = {{ opacity: 0 }}
-                    animate = {{ opacity: previewView ? 1 : 0 }}
-                    transition = {{ delay: 0.5, duration: 0.6}}>
-                    { renderChart ? 
-                    <ReadingChart
-                        labels={labels} 
-                        milliseconds={milliSeconds} 
-                        values={values}
-                        className={styles.PreviewChart}/>
-                    : null }
-                </motion.div> 
-            : null }  
+            transition = {{ duration: 0.4 }}>
             <motion.div
                 initial = {{ opacity: 0 }}
                 animate = {{ opacity: 1 }}
                 transition = {{ duration: 0.4 }}> 
-                { width > breakpoint ?
                 <BackButton onClick={handleBackClick}/>
-                : <MobileBackButton onClick={handleBackClick}/> }
             </motion.div>
-            { width > breakpoint ?
             <>
             <motion.div
                 initial = {{ opacity: 0, x: 300}}
@@ -374,7 +618,7 @@ const DropboxView = (callback) => {
                                     initial = {{ opacity: 0, x: 100}}
                                     animate = {{ opacity: showButtons ? 1 : 0, x: showButtons ? 0 : -500, y: previewView ? -50 : 0 }}
                                     transition = {{ duration: 0.4 }}>
-                                    <ActionButton onClick={handleSendToBundle}>
+                                    <ActionButton onClick={handleShowBundleModal}>
                                         SEND TO BUNDLE
                                     </ActionButton>
                                 </motion.div>
@@ -384,63 +628,20 @@ const DropboxView = (callback) => {
                 </DropboxRow>
             </motion.div>
             </>
-            :
-            <>
-            <motion.div
-                initial = {{ opacity: 0, x: 300}}
-                animate = {{ opacity: 1, x: previewView ? "-30%" : 0, y: previewView ? "-45%" : 0 }}
-                transition = {{ duration: 0.4 }}> 
-                <MobileDropboxRow>
-                    <MobileDropboxContainer onMouseOver={handleMouseOver} onMouseOut={handleMouseOut} onClick={handleDropboxClick}>
-                        { !previewView ?
-                        <DropboxChooser
-                            appKey={APP_KEY}
-                            success={handleSuccess}
-                            cancel={() => console.log("closed")}
-                            multiselect={false}
-                            extensions={[".csv"]}>
-                            <motion.div
-                                initial = {{ opacity: 1 }}
-                                animate = {{ opacity: previewView ? 0 : 1, scale: mouseOver && !previewView ? 1.2 : 1}}
-                                transition = {{ duration: 0.2 }}> 
-                                <MobileDropboxButton/>
-                            </motion.div>
-                            <motion.div
-                                initial = {{ opacity: 0, y: -120}}
-                                animate = {{ opacity: mouseOver && !previewView ? 1 : 0, y: mouseOver ? -140 : -120}}
-                                transition = {{ duration: 0.2 }}> 
-                                <MobileFileSpanIcon/>
-                            </motion.div>
-                        </DropboxChooser>
-                        : null }
-                    </MobileDropboxContainer>
-                    <MobileDropboxFile>
-                        {fileName}
-                        { loading ? <Loading/> : null }
-                        <motion.div
-                            initial = {{ opacity: 0, x: "100%", y: "-70%" }}
-                            animate = {{ opacity: showButtons && !previewView ? 1 : 0, x: showButtons ? "30%" : "100%", y: "-70%" }}
-                            transition = {{ duration: 0.4 }}>                    
-                            <MobileActionButton onClick={handlePreviewClick}>
-                                PREVIEW
-                            </MobileActionButton>
-                        </motion.div>
-                        <motion.div
-                            initial = {{ opacity: 0, x: "100%", y: "-70%" }}
-                            animate = {{ opacity: showButtons ? 1 : 0, x: showButtons ? previewView ? "80%" : "30%" : "100%", y: previewView ? "-400%" : "-150%" }}
-                            transition = {{ duration: 0.4 }}>
-                            <MobileActionButton onClick={handleSendClick}>
-                                SEND
-                            </MobileActionButton>
-                        </motion.div>
-                    </MobileDropboxFile>
-                </MobileDropboxRow>
-            </motion.div>           
-            </> }
             { previewView ?
             <>
-            { width > breakpoint ?
-            <>
+            <motion.div
+                initial = {{ opacity: 0 }}
+                animate = {{ opacity: previewView ? 1 : 0 }}
+                transition = {{ delay: 0.5, duration: 0.6}}>
+                { renderChart ? 
+                <ReadingChart
+                    labels={labels} 
+                    milliseconds={milliSeconds} 
+                    values={values}
+                    className={styles.PreviewChart}/>
+                : null }
+            </motion.div> 
             <motion.div
                 initial = {{ opacity: 0, y: 200}}
                 animate = {{ opacity: previewView ? 1 : 0, y: previewView ? 0 : 200 }}
@@ -461,12 +662,96 @@ const DropboxView = (callback) => {
                     onMillisecondsChange={handleMillisecondsChange}
                     onTimestampChange={handleTimestampChange}/>
             </motion.div> 
-            </>
-            :
+            </> : null }
+        </motion.div>
+
+        :
+
+        <motion.div
+            initial = {{ opacity: 1, y: 0 }}
+            animate = {{ opacity: dismiss ? 0 : 1, y: dismiss ? 500 : 0 }}
+            transition = {{ duration: 0.4 }}>
+            <motion.div
+                initial = {{ opacity: 0 }}
+                animate = {{ opacity: 1 }}
+                transition = {{ duration: 0.4 }}> 
+                <MobileBackButton onClick={handleBackClick}/>
+            </motion.div>
             <>
             <motion.div
-                initial = {{ opacity: 0, x: "80%", y: "0%"}}
-                animate = {{ opacity: previewView ? 1 : 0, x: previewView ? "0%" : "100%", y: "-80%" }}
+                initial = {{ opacity: 0, x: 300}}
+                animate = {{ opacity: 1, x: previewView ? "0%" : 0, y: previewView ? "0%" : 0, scale: previewView ? 1 : 1 }}
+                transition = {{ duration: 0.4 }}> 
+                    <MobileDropboxContainer id="dropbox-container" onMouseOver={handleMouseOver} onMouseOut={handleMouseOut} onClick={handleDropboxClick}>
+                        { !previewView ?
+                        <DropboxChooser
+                            appKey={APP_KEY}
+                            success={handleSuccess}
+                            cancel={() => console.log("closed")}
+                            multiselect={false}
+                            extensions={[".csv"]}
+                            disabled={previewView}>
+                            <motion.div
+                                initial = {{ opacity: 1 }}
+                                animate = {{ opacity: previewView ? 0 : 1, scale: mouseOver && !previewView ? 1.2 : 1}}
+                                transition = {{ duration: 0.2 }}> 
+                                <MobileDropboxButton/>
+                            </motion.div>
+                        </DropboxChooser>
+                        : null }
+                    </MobileDropboxContainer>
+                    <MobileDropboxFile>
+                        {fileName}
+                        { loading ? <Loading/> : null }
+                            <motion.div
+                                initial = {{ opacity: 0, x: 100}}
+                                animate = {{ opacity: showButtons && !previewView ? 1 : 0, x: showButtons ? 0 : 100 }}
+                                transition = {{ duration: 0.4 }}>                    
+                                <MobileActionButton className={styles.MobileCenterButtons} onClick={handlePreviewClick}>
+                                    PREVIEW
+                                </MobileActionButton>
+                            </motion.div>
+                            { showBundleForm ?
+                            <>
+                                <p className={styles.BundleFileLabel}>Bundle:</p>
+                                <InputText type="text" value={bundleName} onChange={handleChangeBundleName} className={styles.TypeLabel} style={{ width: "80%", fontSize: "8vw", marginLeft: "10%", borderBottom: "1px solid" }} />
+                                <motion.div
+                                    initial = {{ opacity: 0, x: 100}}
+                                    animate = {{ opacity: sendWithBundle ? 1 : 0, x: sendWithBundle ? 0 : 100 }}
+                                    transition = {{ duration: 0.4 }}>
+                                    <MobileActionButton className={styles.MobileCenterButtons} id="test-send-button" onClick={handleSendClick} style={{ marginBottom: "5vh" }}>
+                                        SEND
+                                    </MobileActionButton>
+                                </motion.div>
+                            </>
+                            : 
+                            <>
+                                <motion.div
+                                    initial = {{ opacity: 0, x: 100}}
+                                    animate = {{ opacity: showButtons ? 1 : 0, x: showButtons ? 0 : -500, y: previewView ? "-200%" : showButtons ? "-100%" : 0 }}
+                                    transition = {{ duration: 0.4 }}>
+                                    <MobileActionButton className={styles.MobileCenterButtons} onClick={handleSendClick}>
+                                        SEND AS SINGLE
+                                    </MobileActionButton>
+                                </motion.div>
+                                <motion.div
+                                    initial = {{ opacity: 0, x: 100}}
+                                    animate = {{ opacity: showButtons ? 1 : 0, x: showButtons ? 0 : -500, y: previewView ? "-300%" : showButtons ? "-200%" : 0 }}
+                                    transition = {{ duration: 0.4 }}>
+                                    <MobileActionButton className={styles.MobileCenterButtons} onClick={handleShowBundleModal}>
+                                        SEND TO BUNDLE
+                                    </MobileActionButton>
+                                </motion.div>
+                            </>
+                            }
+                    </MobileDropboxFile>
+            </motion.div>
+            </>
+            { previewView ?
+            <>
+            <motion.div
+                initial = {{ opacity: 0 }}
+                animate = {{ opacity: previewView ? 1 : 0 }}
                 transition = {{ delay: 0.5, duration: 0.6}}>
                 { renderChart ? 
                 <ReadingChart
@@ -477,8 +762,8 @@ const DropboxView = (callback) => {
                 : null }
             </motion.div> 
             <motion.div
-                initial = {{ opacity: 0, y: "-20%"}}
-                animate = {{ opacity: previewView ? 1 : 0, y: previewView ? "-20%" : "100%" }}
+                initial = {{ opacity: 0, y: 200}}
+                animate = {{ opacity: previewView ? 1 : 0, y: previewView ? 0 : 200 }}
                 transition = {{ delay: 0.5, duration: 0.4}}>
                 <DataTable
                     passedLabels={sensorLabels}
@@ -495,10 +780,55 @@ const DropboxView = (callback) => {
                     onSensorLabelChange={handleSensorLabelChange}
                     onMillisecondsChange={handleMillisecondsChange}
                     onTimestampChange={handleTimestampChange}/>
-            </motion.div>           
-            </> }
+            </motion.div> 
             </> : null }
-        </motion.div>
+        </motion.div> }
+
+        <Modal show={showBundleModal} onHide={handleCloseBundleModal} animation={true} centered backdrop="static" backdropClassName={styles.ModalBackdrop}>
+            <Modal.Header closeButton>
+                <h4>Choose destination bundle</h4>
+            </Modal.Header>
+            <Modal.Body>
+                <Select options={bundleSelect} onChange={handleOnSelectChange} />
+                { width > breakpoint ?
+                <>
+                    <p>Or create a new one:</p>
+                    <InputText type="text" value={bundleName} onChange={handleChangeBundleName} className={styles.TypeLabel}/>
+                </>
+                :
+                <>
+                    <p class="mt-5 mb-5">Or create a new one:</p>
+                    <InputText style={{ fontSize: "5vw" }} type="text" value={bundleName} onChange={handleChangeBundleName} className={styles.TypeLabel}/>
+                </> }
+            </Modal.Body>
+            <Modal.Footer>
+                <button onClick={handleCloseBundleModal} className={styles.CancelButton}>
+                    Cancel
+                </button>
+                <button onClick={(e) => {handleSendClick(e)}} className={styles.DeleteButton}>
+                    Send
+                </button>
+            </Modal.Footer>
+        </Modal>
+
+        <Modal show={showModal} onHide={handleCloseModal} animation={true} centered backdrop="static" backdropClassName={styles.ModalBackdrop}>
+            <Modal.Header closeButton>
+                <h5>It seems like this .csv has uncommon structure</h5>
+            </Modal.Header>
+            <Modal.Body>
+                Check if your file would match the following templates:
+                <FirstTemplate />
+                <SecondTemplate />
+                <ThirdTemplate />
+                <FourthTemplate />
+                None of the above? <a href="/sensordata/insert">Check the other ways to import data</a>
+            </Modal.Body>
+            <Modal.Footer>
+                <button onClick={handleCloseModal} className={styles.CancelButton}>
+                    Cancel
+                </button>
+            </Modal.Footer>
+        </Modal>
         </>
     )
 }

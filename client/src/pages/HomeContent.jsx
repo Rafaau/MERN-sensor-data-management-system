@@ -98,7 +98,7 @@ function HomeContainer() {
                     animate = {{ opacity: 1, x: "10%", y: "0%" }}
                     transition = {{ delay: 0.5, duration: 0.5 }}
                     className = {styles.HomeDescription}>
-                    <MobileHomeDescription>
+                    <MobileHomeDescription style={{ marginTop: "15vh" }}>
                         This simple application allows to collect, share and analyze data from IoT sensors by uploading files with a previously made reading or entering data by yourself.
                         <br/><br/>
                         Please, choose one of the two actions in the upper menu.

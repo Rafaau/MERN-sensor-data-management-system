@@ -5,7 +5,8 @@ const ReadingBundle = new Schema(
     {
         name: { type: String, required: true },
         userId: { type: String, required: true },
-        groupId: { type: String, required: true }
+        groupId: { type: String, required: true },
+        isShared: { type: Boolean, required: true }
     },
     { timestamps: true },
 )
