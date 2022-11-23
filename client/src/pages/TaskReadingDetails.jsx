@@ -40,9 +40,18 @@ function TaskReadingDetails() {
 
     useEffect(() => {
         async function getReadings() {
+            const loggedInUser = localStorage.getItem("user")
+            let foundUser
+            if (loggedInUser) {
+                const parsed = JSON.parse(loggedInUser)
+                foundUser = await api.getUserByEmail(parsed.email)
+                console.log(foundUser)
+                setUser(foundUser.data.data)
+                setLogged(true)
+            }
             let response = { status: "" }
             try {
-                response = await api.getReadingsByTaskAndName(task, sensor)
+                response = await api.getReadingsByTaskAndName(foundUser.data.data._id, task, sensor)
             } catch {
 
             } finally {
@@ -55,7 +64,6 @@ function TaskReadingDetails() {
 
         if (didMount.current) {
             getReadings()
-            setupUser()
             didMount.current = false
             return
         }
@@ -67,15 +75,6 @@ function TaskReadingDetails() {
     
         return () => window.removeEventListener("resize", handleWindowResize)
     }, [])
-
-    const setupUser = () => {
-        const loggedInUser = localStorage.getItem("user")
-        if (loggedInUser) {
-            const foundUser = loggedInUser
-            setUser(JSON.parse(foundUser))
-            setLogged(true)
-        }
-    }
 
     let firstTimestamp = 0
     let columns = []
@@ -169,7 +168,7 @@ function TaskReadingDetails() {
     const handleBackToTask = async () => {
         setDismiss(true)
         await new Promise(p => setTimeout(p, 1000))
-        window.location.href = `/task/${task}`
+        window.location.href = `/${user._id}/task/${task}`
     }
 
     return (

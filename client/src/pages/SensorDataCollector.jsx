@@ -129,7 +129,7 @@ function SensorDataCollector() {
         {
             setDismiss(true)
             await new Promise(p => setTimeout(p, 300))
-            window.location.href = `/task/${task.task}`
+            window.location.href = `/${user._id}/task/${task.task}`
         }
     }
 
@@ -161,7 +161,7 @@ function SensorDataCollector() {
     const handleShareTask = async (e, obj) => {
         e.preventDefault()
         console.log(e.target.className)
-        const response = await api.shareTaskByName(obj.task) 
+        const response = await api.shareTaskByName(user._id, obj.task) 
         if (response.status == 200) {
             if (!obj.isShared)
                 openSuccessSnackbar("Task shared successfully!")

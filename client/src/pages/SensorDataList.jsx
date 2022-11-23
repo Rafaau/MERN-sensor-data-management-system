@@ -459,6 +459,7 @@ function SensorDataList(callback) {
 
     const moveBundle = async (event, bundle) => {
         event.preventDefault()
+        
         const bundleToUpdate = {
             _id: bundle._id,
             name: bundle.name,

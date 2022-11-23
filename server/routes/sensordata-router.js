@@ -21,9 +21,9 @@ router.delete("/allreadings", SensorDataController.deletes)
 
 // TASKS
 router.post("/stream", SensorDataController.streamDataToDb)
-router.get("/task/:task", SensorDataController.getReadingsByTask)
-router.get("/task/:task/:name", SensorDataController.getReadingsByTaskAndName)
-router.put("/task/:name", SensorDataController.shareTaskByName)
+router.get("/:userId/task/:task", SensorDataController.getReadingsByTask)
+router.get("/:userId/task/:task/:name", SensorDataController.getReadingsByTaskAndName)
+router.put("/:userId/task/:name", SensorDataController.shareTaskByName)
 router.get("/tasks/by/shared", SensorDataController.getSharedTasks)
 router.delete("/task/:task/:userId", SensorDataController.deleteReadingsByTask)
 

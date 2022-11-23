@@ -30,9 +30,18 @@ function TaskDetails() {
 
     useEffect(() => {
         async function getReadings() {
+            const loggedInUser = localStorage.getItem("user")
+            let foundUser
+            if (loggedInUser) {
+                const parsed = JSON.parse(loggedInUser)
+                foundUser = await api.getUserByEmail(parsed.email)
+                console.log(foundUser)
+                setUser(foundUser.data.data)
+                setLogged(true)
+            }
             let response = { status: "" }
             try {
-                response = await api.getReadingsByTask(task)
+                response = await api.getReadingsByTask(foundUser.data.data._id, task)
             } catch {
 
             } finally {
@@ -44,7 +53,6 @@ function TaskDetails() {
 
         if (didMount.current) {
             getReadings()
-            setupUser()
             didMount.current = false
             return
         }
@@ -57,15 +65,6 @@ function TaskDetails() {
         return () => window.removeEventListener("resize", handleWindowResize)
     }, [])
 
-    const setupUser = () => {
-        const loggedInUser = localStorage.getItem("user")
-        if (loggedInUser) {
-            const foundUser = loggedInUser
-            setUser(JSON.parse(foundUser))
-            setLogged(true)
-        }
-    }
-
     const groupedBySensor = [...new Map(readings.map(reading => [reading["name"], reading])).values()]
     const firstLog = new Date(Math.min(...readings.map(r => new Date(r.createdAt))))
     const lastLog = new Date(Math.max(...readings.map(r => new Date(r.createdAt))))
@@ -73,7 +72,7 @@ function TaskDetails() {
     const handleRedirectToReading = async sensor => {
         setDismiss(true)
         await new Promise(p => setTimeout(p, 800))
-        window.location.href = `/task/${task}/${sensor.name}`
+        window.location.href = `/${user._id}/task/${task}/${sensor.name}`
     }
 
     const TaskReadings = () => {
