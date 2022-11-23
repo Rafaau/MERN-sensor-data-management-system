@@ -1,4 +1,5 @@
 const SensorData = require("../models/sensordata-model")
+const User = require("../models/user-model")
 const https = require("https")
 const fs = require("fs")
 const { parse } = require("csv-parse")
@@ -169,52 +170,72 @@ readFile = async (req, res) => {
 }
 
 streamDataToDb = async (req, res) => {
-    const body = req.body
-    console.log(req)
+    await User.findOne({ _id: req.body.uuid }, (err, user) => {
 
-    if (!body) {
-        return res
-            .status(400)
-            .json({
-                success: false,
-                error: "Cannot get post body"
-            })
-    }
-
-    body.sensors.forEach(async sensor => {
-        const uuid = body.uuid
-        const userId = body.uuid
-        const name = sensor.name
-        const bundleId = "1"
-        const timestamp = Date.now()
-        const milliseconds = 1
-        const sensorlabels = Object.keys(sensor)[1]+","+(Object.keys(sensor)[2] == undefined ? "" : Object.keys(sensor)[2])+","+(Object.keys(sensor)[3] == undefined ? "" : Object.keys(sensor)[3])
-        const sensorvalues = sensor.value0+","+(sensor.value1 == undefined ? "" : sensor.value1)+","+(sensor.value2 == undefined ? "" : sensor.value2)
-        const task = body.task
-        const isShared = false
-
-        const sensordata = { uuid, userId, name, bundleId, timestamp, milliseconds, sensorlabels, sensorvalues, task, isShared }
-        //console.log(sensordata)
-
-        const sensorData = new SensorData(sensordata)
-
-        if (!sensorData) {
-                console.log("err")
+        if (err) {
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    error: err
+                })
         }
 
-        sensorData
-            .save()
-            .then(() => {
-                res.write(sensorData)
-            })
-            .catch(err => {
-                console.log("err")
-            })
+        if (!user) {
+            return res
+                .status(404)
+                .json({
+                    success: false,
+                    error: "User with provided uuid does not exist"
+                })
+        }}).clone().then(() => {
+
+        const body = req.body
+
+        if (!body) {
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    error: "Cannot get post body"
+                })
+        }
+
+        body.sensors.forEach(async sensor => {
+            const uuid = body.uuid
+            const userId = body.uuid
+            const name = sensor.name
+            const bundleId = "1"
+            const timestamp = Date.now()
+            const milliseconds = 1
+            const sensorlabels = Object.keys(sensor)[1]+","+(Object.keys(sensor)[2] == undefined ? "" : Object.keys(sensor)[2])+","+(Object.keys(sensor)[3] == undefined ? "" : Object.keys(sensor)[3])
+            const sensorvalues = sensor.value0+","+(sensor.value1 == undefined ? "" : sensor.value1)+","+(sensor.value2 == undefined ? "" : sensor.value2)
+            const task = body.task
+            const isShared = false
+
+            const sensordata = { uuid, userId, name, bundleId, timestamp, milliseconds, sensorlabels, sensorvalues, task, isShared }
+            console.log(sensordata)
+
+            const sensorData = new SensorData(sensordata)
+
+            if (!sensorData) {
+                    console.log("err")
+            }
+
+            sensorData
+                .save()
+                .then(() => {
+                    res.write(sensorData)
+                })
+                .catch(err => {
+                    console.log("err")
+                })
+        })
     })
 }
 
 getReadingsByTask = async (req, res) => {
-    await SensorData.find({ task: req.params.task }, (err, readings) => {
+    await SensorData.find({ userId: req.params.userId, task: req.params.task }, (err, readings) => {
         if (err) {
             return res
                 .status(400)
@@ -243,7 +264,7 @@ getReadingsByTask = async (req, res) => {
 }
 
 getReadingsByTaskAndName = async (req, res) => {
-    await SensorData.find({ task: req.params.task, name: req.params.name }, (err, readings) => {
+    await SensorData.find({ userId: req.params.userId, task: req.params.task, name: req.params.name }, (err, readings) => {
         if (err) {
             return res
                 .status(400)
@@ -273,7 +294,7 @@ getReadingsByTaskAndName = async (req, res) => {
 
 shareTaskByName = async (req, res) => {
     let share
-    await SensorData.findOne({ task: req.params.name }, (err, reading) => {
+    await SensorData.findOne({ userId: req.params.userId, task: req.params.name }, (err, reading) => {
         if (err) {
             return res
                 .status(400)

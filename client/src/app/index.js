@@ -141,7 +141,7 @@ function App() {
               </> }
               </>
             } />
-            <Route path = "/task/:task" exact element = {
+            <Route path = "/:userId/task/:task" exact element = {
               <>
               { width > breakpoint ?
               <>
@@ -162,7 +162,7 @@ function App() {
               </> }
               </>
             } />
-            <Route path = "/task/:task/:sensor" exact element = {
+            <Route path = "/:userId/task/:task/:sensor" exact element = {
               <>
               { width > breakpoint ?
               <>
