@@ -463,7 +463,8 @@ function SensorDataList(callback) {
             _id: bundle._id,
             name: bundle.name,
             userId: bundle.userId,
-            groupId: selectValue
+            groupId: selectValue,
+            isShared: bundle.isShared,
         }
         const response = await api.updateBundle(bundle._id, bundleToUpdate) 
         if (response.status == 200) {
