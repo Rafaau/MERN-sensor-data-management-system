@@ -15,6 +15,7 @@ import NotAuthorizedView from "./NotAuthorizedView"
 import WallpaperGrid from "./WallpaperGrid"
 import HomeWallpaper3 from "./HomeWallpaper3"
 import JsonView from "./JsonView"
+import Table from "./Table"
 
 export { 
     UpperNavBar, 
@@ -33,4 +34,5 @@ export {
     NotAuthorizedView,
     WallpaperGrid,
     HomeWallpaper3,
-    JsonView,}
+    JsonView,
+    Table, }

@@ -5,7 +5,6 @@ const SensorDataController = require("../controllers/sensordata-controller")
 const mongoose = require("mongoose")
 const db = require("./db")
 
-
 let mockJson, mockStatus, mockResponse
 
 beforeAll(async () => {mongoose.disconnect(), await db.connect()})
@@ -64,8 +63,8 @@ const validStreamReq  = {
 const mockByUuidRequest = { params: { uuid: "12345" } }
 const mockByUserIdRequest = { params: { userId: "12345" } }
 const mockByBundleIdRequest = { params: { bundleId: "1" } }
-const mockByTaskRequest = { params: { task: "test" } }
-const mockByTaskAndNameRequest = { params: { task: "test", name: "Test" }}
+const mockByTaskRequest = { params: { userId: "12345", task: "test" } }
+const mockByTaskAndNameRequest = { params: { userId: "12345", task: "test", name: "Test" }}
 
 describe("READING CREATE", () => {
 
@@ -218,7 +217,7 @@ describe("READING GET", () => {
             .send(validApiReq)
         
         await api
-            .get(`/api/task/test`)
+            .get(`/api/12345/task/test`)
             .expect(200)
             .expect("Content-type", /application\/json/)
     })
@@ -235,7 +234,7 @@ describe("READING GET", () => {
             .send(validApiReq)
 
         await api
-            .get(`/api/task/test/Test`)
+            .get(`/api/12345/task/test/Test`)
             .expect(200)
             .expect("Content-type", /application\/json/)
     })
@@ -473,7 +472,7 @@ describe("READING GET", () => {
             .post("/api/reading")
             .send(validApiReq)
 
-        await SensorDataController.getReadingsByTaskAndName(mockByTaskAndNameRequest, mockResponse)
+        const dupa = await SensorDataController.getReadingsByTaskAndName(mockByTaskAndNameRequest, mockResponse)
 
         await new Promise(resolve => setTimeout(resolve, 1000))
 
@@ -527,7 +526,7 @@ describe("READING DELETE", () => {
 
         await SensorDataController.deleteReading(mockByUuidRequest, mockResponse)
 
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+        await new Promise((resolve) => setTimeout(resolve, 1))
 
         expect(mockJson).toHaveBeenCalledWith({ success: true, data: expect.anything() })
         await api

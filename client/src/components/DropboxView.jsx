@@ -188,10 +188,15 @@ const DropboxView = (callback) => {
             setLoading(true)
             const urlObj = { link: dropboxFile.link }
             const downloadResponse = await api.downloadFile(urlObj)
+            console.log("1")
             if (downloadResponse.status == 200)
             {
+                console.log("2")
+                console.log(dropboxFile.name)
                 const readResponse = await api.readFile(dropboxFile.name)
+                console.log("3")
                 const csvOutput = readResponse.data.data
+                console.log(csvOutput)
                 const csvHeaders = Object.keys(csvOutput[0]) 
                 if (csvHeaders[csvHeaders.length - 1] == undefined 
                     || csvHeaders[csvHeaders.length - 1] == ""

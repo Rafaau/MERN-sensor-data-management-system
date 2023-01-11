@@ -20,6 +20,7 @@ const validApiReq = {
     name: "Test",
     userId: "1",
     groupId: "1",
+    isShared: false,
 }
 
 const validReq = {
@@ -27,6 +28,7 @@ const validReq = {
         name: "Test",
         userId: "1",
         groupId: "1",
+        isShared: false,
     }
 }
 
@@ -424,6 +426,7 @@ const mockUpdateRequest = {
         name: "Test",
         userId: "1",
         groupId: "2",
+        isShared: false,
     },
 
     params: {

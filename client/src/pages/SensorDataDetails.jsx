@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react"
+import React, { useEffect, useState, useRef, useMemo } from "react"
 import { useParams } from "react-router-dom"
 import { CSVLink } from "react-csv"
 import { Line } from "react-chartjs-3"
@@ -11,28 +11,32 @@ import {
     ReadingHead, 
     DownloadFileButton, 
     DetailsRow, 
-    DetailsName } from "../style/styled-components"
-import { MobileContentBlock, MobileDetailsName } from "../style/styled-mobile-components"
-import { ReadingChart, NotAuthorizedView } from "../components"
+    DetailsName,
+    SortIcon,
+    IsNotMonotonous, } from "../style/styled-components"
+import { 
+    MobileContentBlock, 
+    MobileDetailsName,
+    MobileSortIcon, } from "../style/styled-mobile-components"
+import { ReadingChart, NotAuthorizedView, Table } from "../components"
+import { MobileTable } from "../mobile-components"
 import styles from "../style/site.module.css"
 import { motion } from "framer-motion"
 
 
 function SensorDataDetails() {
     const didMount = useRef(true)
-    const [user, setUser] = useState({})
     const [logged, setLogged] = useState(false)
     const [reading, setReading] = useState("")
     const [readings, setReadings] = useState([])
+    const [user, setUser] = useState({})
     const [labels, setLabels] = useState([])
     const [values, setValues] = useState([])
     const [milliseconds, setMilliseconds] = useState([])
-    const [chartLabelz, setChartLabels] = useState([])
-    const [chartData, setChartData] = useState([])
+    const [isMonotonous, setIsMonotonous] = useState(true)
     const { uuid } = useParams()
     const [width, setWidth] = useState(window.innerWidth)
     const breakpoint = 620;
-    let data, options
 
     useEffect(() => {
         const getData = async () => {
@@ -110,47 +114,74 @@ function SensorDataDetails() {
         )
     }
 
-    const DataTable = () => {
-        return (
-            <motion.table 
-                initial = {{ opacity: 0, x: "-50%" }}
-                animate = {{ opacity: 1, x: "0%" }}
-                transition = {{ type: "spring", duration: 0.5}}
-                className = {styles.ReadingTable}>
-                <thead  className={styles.ReadingHead}>
-                    <tr>
-                        <Head span="Timestamps"/>
-                        <Head span="Milliseconds"/>
-                        <Head span={labels[0]}/>
-                        <Head span={labels[1]}/>
-                        <Head span={labels[2]}/>
-                    </tr>
-                </thead>
-                {readings.map((reading, index) => (
-                    <tbody data-index={index} className={styles.ReadingBody}>
-                            <motion.tr
-                                initial = {{ opacity: 0, y: "-10%" }}
-                                animate = {{ opacity: 1, y: "0%" }}
-                                transition = {{ type: "spring", duration: 0.2, delay: index-(index*0.85) }}>      
-                                <Cell span={new Date(reading.timestamp).toLocaleString()}/>
-                                <Cell span={reading.milliseconds}/>
-                                <Cell span={reading.sensorvalues.split(",")[0]}/>
-                                <Cell span={reading.sensorvalues.split(",")[1]}/>
-                                <Cell span={reading.sensorvalues.split(",")[2]}/>
-                            </motion.tr>  
-                    </tbody>
-                ))}
-            </motion.table>
-        )
-    }
-
+    /// CSV ////
     const csvFile = [
         [`Timestamps,Milliseconds,${labels}`],
     ]
 
     readings.forEach(reading => (      
-        csvFile.push([`${reading.timestamp},${reading.milliseconds},${reading.sensorvalues}`])
+        csvFile.push([reading.timestamp,reading.milliseconds,reading.sensorvalues.replaceAll('"', "")])
     ))
+
+    ////////////
+
+    /// TABLE //
+    // const filteredByBundleId = sensordatas.filter(sensordata => sensordata.bundleId == 0)
+    // const readingCount = [...new Map(sensordatas.map(sensordata => [sensordata["uuid"], sensordata])).values()].length
+    // const distinctedByUuid = [...new Map(filteredByBundleId.map(sensordata => [sensordata["uuid"], sensordata])).values()]
+    // const fixedDate = distinctedByUuid.map(sensordata => { 
+    //     return {...sensordata, createdAt: new Date(sensordata.createdAt).toLocaleString()}
+    // })
+    const data = readings.map(reading => {
+        return {...reading, 
+            timestamp: reading.timestamp, 
+            milliseconds: reading.milliseconds,
+            sensorvalue1: reading.sensorvalues.split(",")[0],
+            sensorvalue2: reading.sensorvalues.split(",")[1],
+            sensorvalue3: reading.sensorvalues.split(",")[2]}
+    })
+
+    for (let i = 0; i < readings.length; i++) {
+        if (i != 0 && isMonotonous && readings[i].milliseconds - readings[i - 1].milliseconds > 5000) {
+            setIsMonotonous(false);
+            break;
+        }
+    } 
+
+    const columns = [
+        {
+            Header: <>Timestamps { width > breakpoint ? <SortIcon/> : <MobileSortIcon/> }</>,
+            accessor: "timestamp",
+            Cell: props => 
+                <>{props.value}</>,
+        },
+        {
+            Header: <>Milliseconds { width > breakpoint ? <SortIcon/> : <MobileSortIcon/> }</>,
+            accessor: "milliseconds",
+            Cell: props => 
+                <>{props.value}</>,
+        },
+        {
+            Header: <>{labels[0]}</>,
+            accessor: "sensorvalue1",
+            Cell: props =>
+                <>{props.value}</>,       
+        },
+        {
+            Header: <>{labels[1]}</>,
+            accessor: "sensorvalue2",
+            Cell: props =>
+                <>{props.value}</>,       
+        },
+        {
+            Header: <>{labels[2]}</>,
+            accessor: "sensorvalue3",
+            Cell: props =>
+                <>{props.value}</>,       
+        },
+    ]
+
+    /////////
 
     return (
         <>
@@ -168,6 +199,13 @@ function SensorDataDetails() {
                             <DetailsName>
                                 {reading.name}
                             </DetailsName>
+                            { !isMonotonous ?
+                                <IsNotMonotonous>
+                                    It seems like there are some significant intervals between timestamps,
+                                    so probably the chart was drawn incorrectly.
+                                </IsNotMonotonous>
+                                : null
+                            }
                         </motion.div>
                         {labels.length && milliseconds.length && values.length? 
                             <>
@@ -180,12 +218,12 @@ function SensorDataDetails() {
                             </>
                         : null}
                     </DetailsRow>
-                    <CSVLink data={csvFile} filename={reading.type}>
+                    <CSVLink data={csvFile} filename={reading.name} enclosingCharacter={""}>
                         <DownloadFileButton>    
                             <span className={styles.DownloadSpan}>.csv</span>
                         </DownloadFileButton>
                     </CSVLink>
-                    <DataTable/>
+                    <Table data={data} columns={columns}/>
                     <div style={{ "height": "1vh"}}>
                     </div>
                 </> 
@@ -222,7 +260,7 @@ function SensorDataDetails() {
                             <span className={styles.DownloadSpan}>.csv</span>
                         </DownloadFileButton>
                     </CSVLink>
-                    <DataTable/>
+                    <MobileTable data={data} columns={columns} />
                     <div style={{ "height": "1vh"}}>
                     </div>
                 </> 

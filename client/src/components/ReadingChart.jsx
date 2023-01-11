@@ -70,7 +70,7 @@ function Chart(props) {
                     data: props.values[1],
                     fill: false,
                     lineTension: 0.5,
-                    pointBackgroundColor: "#0068D6",
+                    pointBackgroundColor: "#0068D6",                  
                     borderColor: "#0068D6"
                 },
                 {
@@ -85,7 +85,44 @@ function Chart(props) {
         }
     }
 
+
+    if (props.milliseconds.length > 100) { 
+        data.datasets[0].pointRadius = []
+        for (let i = 0; i < props.milliseconds.length; i++) {
+            if (i % 10 == 0)
+                data.datasets[0].pointRadius.push(4);
+            else
+                data.datasets[0].pointRadius.push(0);
+        }
+        if (props.labels.filter(e => String(e).trim()).length  == 2) {
+            data.datasets[1].pointRadius = []
+            for (let i = 0; i < props.milliseconds.length; i++) {
+                if (i % 10 == 0)
+                    data.datasets[1].pointRadius.push(4);
+                else
+                    data.datasets[1].pointRadius.push(0);
+            }           
+        }
+        if (props.labels.filter(e => String(e).trim()).length  == 3) {
+            data.datasets[1].pointRadius = []
+            data.datasets[2].pointRadius = []
+            for (let i = 0; i < props.milliseconds.length; i++) {
+                if (i % 10 == 0)
+                    data.datasets[1].pointRadius.push(4);
+                else
+                    data.datasets[1].pointRadius.push(0);
+            }     
+            for (let i = 0; i < props.milliseconds.length; i++) {
+                if (i % 10 == 0)
+                    data.datasets[2].pointRadius.push(4);
+                else
+                    data.datasets[2].pointRadius.push(0);
+            }         
+        }
+    }
+
     options = {
+        normalized: true,
         responsive: true,
         legend: {
             display: true,
@@ -104,10 +141,16 @@ function Chart(props) {
             limits: {
                 max: 1,
                 min: 0.5,
-            }
+            },
         },
         scales: {
-            y: {
+            xAxes: [{
+                ticks: {
+                    autoSkip: true,
+                    maxTicksLimit: 15
+                }
+            }],
+            yAxes: {
                 title: {
                     display: true,
                     text: "Value",

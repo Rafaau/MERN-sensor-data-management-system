@@ -49,6 +49,7 @@ import { NotAuthorizedView } from "../components"
 
 function SensorDataCollector() {
     const didMount = useRef(true)
+    const didMount2 = useRef(true)
     const [user, setUser] = useState({})
     const [tasks, setTasks] = useState([])
     const [sharedTasks, setSharedTasks] = useState([])
@@ -64,6 +65,15 @@ function SensorDataCollector() {
     const [openErrorSnackbar, closeErrorSnackbar] = useSnackbar(optionsInstance.errorSnackbarOptions)
     const [width, setWidth] = useState(window.innerWidth)
     const breakpoint = 620;
+    const [intervalHelper, invokeIntervalHelper] = useState(1)
+    const [firstMotion, setFirstMotion] = useState(true)
+
+    useEffect(() => {
+        if (user._id != undefined) {
+            const interval = setInterval(() => { setupTasks(user._id) }, 2000);
+            return () => clearInterval(interval);
+        }
+    }, [intervalHelper]);
 
     useEffect(() => {
         if (didMount.current) {
@@ -96,6 +106,11 @@ function SensorDataCollector() {
     }
 
     const setupTasks = async (id) => {
+        if (user._id == undefined)
+            invokeIntervalHelper(intervalHelper+1)
+        else
+            setFirstMotion(false)
+
         let response = { status: "" }
         try {
             response = await api.getReadingByUuid(id)
@@ -203,7 +218,7 @@ function SensorDataCollector() {
             rows.push(
                 <>
                     <motion.div
-                        initial = {{ y: helper < 2 ? "-30%" : "0%", opacity: helper < 2 ? 0 : 1 }}
+                        initial = {{ y: helper < 2 && firstMotion ? "-30%" : "0%", opacity: helper < 2 && firstMotion ? 0 : 1 }}
                         animate = {{ y: !dismiss ? "0%" : "-30%", opacity: !dismiss ? 1 : 0 }}
                         transition = {{ duration: 0.3, delay: i }}>
                         { width > breakpoint ?
@@ -272,7 +287,7 @@ function SensorDataCollector() {
             rows.push(
                 <>
                     <motion.div
-                        initial = {{ y: helper < 2 ? "-30%" : "0%", opacity: helper < 2 ? 0 : 1 }}
+                        initial = {{ y: helper < 2 || firstMotion ? "-30%" : "0%", opacity: helper < 2 || firstMotion ? 0 : 1 }}
                         animate = {{ y: !dismiss ? "0%" : "-30%", opacity: !dismiss ? 1 : 0 }}
                         transition = {{ duration: 0.3, delay: i }}>
                         <div style={{ marginRight: "1.5vw" }}>

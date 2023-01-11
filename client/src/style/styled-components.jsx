@@ -1594,6 +1594,17 @@ const SolutionStepDescription = styled.div.attrs({
     font-size: 1.3vw;
 `
 
+const IsNotMonotonous = styled.div.attrs({
+
+})`
+    font-family: Trebuchet MS, sans-serif;
+    color: #AE0000;
+    position: absolute;
+    width: 30%;
+    top: 20vh;
+    font-size: 1vw;
+`
+
 export { 
     UpperContainer, 
     UpperNav, 
@@ -1733,6 +1744,7 @@ export {
     SolutionStep,
     SolutionStepDescription,
     DeleteTask,
-    ShareButton,}
+    ShareButton,
+    IsNotMonotonous,}
 
 

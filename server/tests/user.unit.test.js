@@ -60,7 +60,7 @@ describe("USER CREATE", () => {
     test("CREATE call - Should return status code 400", async () => {
         await api
             .post("/api/user")
-            .send({invalid: "data"})
+            .send({})
             .expect(400)
     })
 
@@ -314,7 +314,7 @@ describe("USER DELETE", () => {
 
         const get = await api.get("/api/user/Test@test.com")
 
-        await UserController.deleteUser({ params: { id: get._body.data._id } }, mockResponse)
+        await UserController.deleteUser({ params: { _id: get._body.data._id } }, mockResponse)
 
         await new Promise((resolve) => setTimeout(resolve, 1000))
         

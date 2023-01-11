@@ -153,6 +153,7 @@ readFile = async (req, res) => {
     console.log("ctrl: "+fileName)
     let sensorData = []
     await fs.readFile(`./files/${fileName}`, (err, data) => {
+        console.log(data)
         parse(data, {columns: true, trim: true})
             .on("data", rows => {
                 sensorData.push(rows)
@@ -170,6 +171,14 @@ readFile = async (req, res) => {
 }
 
 streamDataToDb = async (req, res) => {
+    if (!req.body)
+        return res
+            .status(400)
+            .json({
+                success: false,
+                error: "Cannot get post body"
+            })
+
     await User.findOne({ _id: req.body.uuid }, (err, user) => {
 
         if (err) {
@@ -191,15 +200,6 @@ streamDataToDb = async (req, res) => {
         }}).clone().then(() => {
 
         const body = req.body
-
-        if (!body) {
-            return res
-                .status(400)
-                .json({
-                    success: false,
-                    error: "Cannot get post body"
-                })
-        }
 
         body.sensors.forEach(async sensor => {
             const uuid = body.uuid

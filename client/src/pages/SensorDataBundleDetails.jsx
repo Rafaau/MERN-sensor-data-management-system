@@ -2,15 +2,29 @@ import React, { useEffect, useState, useRef, useMemo } from "react"
 import { useParams } from "react-router-dom"
 import api from "../api"
 
-import { ContentBlock, Content, SingleReadingRow, RemoveButton, ListRow, ListHeader, ListTotal, SortIcon, TableFooter, NextPage, PreviousPage, EmptyListMessage, GroupListLabel, ExpandIcon, CollapseIcon, DownloadFileButton } from "../style/styled-components"
-import { MobileContentBlock, MobileListRow, MobileListHeader, MobileListTotal, MobileSortIcon, MobileTableFooter, MobileNextPage, MobilePreviousPage, MobileEmptyListMessage } from "../style/styled-mobile-components"
-import { NotAuthorizedView, Tooltips } from "../components"
+import { 
+    ContentBlock, 
+    SingleReadingRow, 
+    RemoveButton, 
+    ListRow, 
+    ListHeader, 
+    ListTotal, 
+    SortIcon, 
+    EmptyListMessage, 
+    DownloadFileButton } from "../style/styled-components"
+import { 
+    MobileContentBlock, 
+    MobileListHeader, 
+    MobileListTotal, 
+    MobileSortIcon, 
+    MobileEmptyListMessage } from "../style/styled-mobile-components"
+import { NotAuthorizedView, Tooltips, Table } from "../components"
+import { MobileTable } from "../mobile-components"
 import styles from "../style/site.module.css"
 import { motion } from "framer-motion"
 import Modal from "react-bootstrap/Modal"
 import Options from "../style/options.js"
 import { useSnackbar } from "react-simple-snackbar"
-import { useSortBy, useTable, usePagination } from "react-table"
 import JSZip from "jszip"
 import { saveAs } from "file-saver"
 
@@ -300,125 +314,6 @@ function SensorDataBundleDetails(callback) {
             </Modal.Footer>
         </Modal> 
         </>
-    )
-}
-
-function MobileTable({columns, data}) {
-
-    const {
-        getTableProps,
-        getTableBodyProps,
-        headerGroups,
-        page,
-        nextPage,
-        previousPage,
-        canNextPage,
-        canPreviousPage,
-        prepareRow,
-
-    } = useTable({ columns, data, initialState: { pageSize: 11 } }, useSortBy, usePagination)
-
-    return (
-        <>
-        <div>
-            <table {...getTableProps()} className={styles.MobileListTable}>
-                <thead>
-                    {headerGroups.map(headerGroup => (
-                        <tr {...headerGroup.getHeaderGroupProps()}>
-                            {headerGroup.headers.map(column => (
-                                <th {...column.getHeaderProps(column.getSortByToggleProps())} className={styles.MobileListHeader}>
-                                    {column.render('Header')}
-                                </th>
-                    ))}
-                </tr>
-            ))}
-          </thead>
-          <tbody {...getTableBodyProps()}>
-          {page.map(row => {
-            prepareRow(row)
-            return (
-                <tr {...row.getRowProps()} className={styles.MobileListTr}>
-                  {row.cells.map(cell => {
-                    return (
-                        <td {...cell.getCellProps()} className={styles.MobileListCell}>
-                          {cell.render('Cell')}
-                        </td>
-                    )
-                  })}
-                </tr>
-            )
-          })}
-          </tbody>
-        </table>
-        </div>   
-        <MobileTableFooter>
-        { canPreviousPage ?
-            <MobilePreviousPage onClick={() => previousPage()} disabled={!canPreviousPage}/>
-            : null }
-            { canNextPage ?
-            <MobileNextPage onClick={() => nextPage()} disabled={!canNextPage}/>
-            : null }
-        </MobileTableFooter> 
-      </>       
-    )
-} 
-
-function Table({columns, data}) {
-    const {
-        getTableProps,
-        getTableBodyProps,
-        headerGroups,
-        page,
-        nextPage,
-        previousPage,
-        canNextPage,
-        canPreviousPage,
-        prepareRow,
-
-    } = useTable({ columns, data, initialState: { pageSize: 5 } }, useSortBy, usePagination)
-
-    return (
-        <>
-        <div>
-            <table {...getTableProps()} className={styles.ListTable}>
-                <thead>
-                    {headerGroups.map(headerGroup => (
-                        <tr {...headerGroup.getHeaderGroupProps()}>
-                            {headerGroup.headers.map(column => (
-                                <th {...column.getHeaderProps(column.getSortByToggleProps())} className={styles.ListHeader}>
-                                    {column.render('Header')}
-                                </th>
-                    ))}
-                </tr>
-            ))}
-          </thead>
-          <tbody {...getTableBodyProps()}>
-          {page.map(row => {
-            prepareRow(row)
-            return (
-                <tr {...row.getRowProps()} className={styles.ListTr}>
-                  {row.cells.map(cell => {
-                    return (
-                        <td {...cell.getCellProps()} className={styles.ListCell}>
-                          {cell.render('Cell')}
-                        </td>
-                    )
-                  })}
-                </tr>
-            )
-          })}
-          </tbody>
-        </table>
-        </div>   
-        <TableFooter>
-            { canPreviousPage ?
-            <PreviousPage onClick={() => previousPage()} disabled={!canPreviousPage}></PreviousPage>
-            : null }
-            { canNextPage ? 
-            <NextPage onClick={() => nextPage()} disabled={!canNextPage}></NextPage>
-            : null }
-        </TableFooter> 
-      </>       
     )
 }
 

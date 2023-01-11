@@ -2,27 +2,21 @@ import React, { useState, useEffect, useRef, useMemo } from "react"
 import { 
     Content, 
     ContentBlock,
-    TableFooter,
-    PreviousPage,
-    NextPage,
     BackButton,
     DetailsName,
     DownloadFileButton,
     FilterButton,
     SortIcon, } from "../style/styled-components"
-import { NotAuthorizedView, ReadingChart } from "../components"
+import { NotAuthorizedView, ReadingChart, Table } from "../components"
+import { MobileTable } from "../mobile-components"
 import { useParams } from "react-router-dom"
 import api from "../api"
-import { useSortBy, useTable, usePagination } from "react-table"
 import { CSVLink } from "react-csv"
 import styles from "../style/site.module.css"
 import { motion } from "framer-motion"
 import { MobileBackButton, 
     MobileContentBlock,
     MobileDetailsName,
-    MobileTableFooter,
-    MobilePreviousPage,
-    MobileNextPage,
     MobileSortIcon, } from "../style/styled-mobile-components"
 
 function TaskReadingDetails() {
@@ -245,124 +239,5 @@ function TaskReadingDetails() {
         </>
     )
 }
-
-function Table({columns, data}) {
-    const {
-        getTableProps,
-        getTableBodyProps,
-        headerGroups,
-        page,
-        nextPage,
-        previousPage,
-        canNextPage,
-        canPreviousPage,
-        prepareRow,
-
-    } = useTable({ columns, data, initialState: { pageSize: 20 } }, useSortBy, usePagination)
-
-    return (
-        <>
-        <div>
-            <table {...getTableProps()} className={styles.ReadingTable}>
-                <thead>
-                    {headerGroups.map(headerGroup => (
-                        <tr {...headerGroup.getHeaderGroupProps()}>
-                            {headerGroup.headers.map(column => (
-                                <th {...column.getHeaderProps(column.getSortByToggleProps())} className={styles.ReadingTableHeader}>
-                                    {column.render('Header')}
-                                </th>
-                    ))}
-                </tr>
-            ))}
-          </thead>
-          <tbody {...getTableBodyProps()}>
-          {page.map(row => {
-            prepareRow(row)
-            return (
-                <tr {...row.getRowProps()} >
-                  {row.cells.map(cell => {
-                    return (
-                        <td {...cell.getCellProps()} className={styles.ReadingTableCell}>
-                          {cell.render('Cell')}
-                        </td>
-                    )
-                  })}
-                </tr>
-            )
-          })}
-          </tbody>
-        </table>
-        </div>   
-        <TableFooter>
-            { canPreviousPage ?
-                <PreviousPage onClick={() => previousPage()} disabled={!canPreviousPage}></PreviousPage>
-            : null }
-            { canNextPage ?
-                <NextPage onClick={() => nextPage()} disabled={!canNextPage}></NextPage>
-            : null }
-        </TableFooter> 
-      </>       
-    )
-}
-
-function MobileTable({columns, data}) {
-
-    const {
-        getTableProps,
-        getTableBodyProps,
-        headerGroups,
-        page,
-        nextPage,
-        previousPage,
-        canNextPage,
-        canPreviousPage,
-        prepareRow,
-
-    } = useTable({ columns, data, initialState: { pageSize: 11 } }, useSortBy, usePagination)
-
-    return (
-        <>
-        <div>
-            <table {...getTableProps()} className={styles.MobileListTable}>
-                <thead>
-                    {headerGroups.map(headerGroup => (
-                        <tr {...headerGroup.getHeaderGroupProps()}>
-                            {headerGroup.headers.map(column => (
-                                <th {...column.getHeaderProps(column.getSortByToggleProps())} className={styles.MobileListHeader}>
-                                    {column.render('Header')}
-                                </th>
-                    ))}
-                </tr>
-            ))}
-          </thead>
-          <tbody {...getTableBodyProps()}>
-          {page.map(row => {
-            prepareRow(row)
-            return (
-                <tr {...row.getRowProps()} className={styles.MobileListTr}>
-                  {row.cells.map(cell => {
-                    return (
-                        <td {...cell.getCellProps()} className={styles.MobileListCell}>
-                          {cell.render('Cell')}
-                        </td>
-                    )
-                  })}
-                </tr>
-            )
-          })}
-          </tbody>
-        </table>
-        </div>   
-        <MobileTableFooter>
-        { canPreviousPage ?
-            <MobilePreviousPage onClick={() => previousPage()} disabled={!canPreviousPage}/>
-            : null }
-            { canNextPage ?
-            <MobileNextPage onClick={() => nextPage()} disabled={!canNextPage}/>
-            : null }
-        </MobileTableFooter> 
-      </>       
-    )
-} 
 
 export default TaskReadingDetails

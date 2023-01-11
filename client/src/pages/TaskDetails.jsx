@@ -27,32 +27,16 @@ function TaskDetails() {
     const [user, setUser] = useState({})
     const breakpoint = 620;
     const zip = new JSZip()
+    const [intervalHelper, invokeIntervalHelper] = useState(1)
 
     useEffect(() => {
-        async function getReadings() {
-            const loggedInUser = localStorage.getItem("user")
-            let foundUser
-            if (loggedInUser) {
-                const parsed = JSON.parse(loggedInUser)
-                foundUser = await api.getUserByEmail(parsed.email)
-                console.log(foundUser)
-                setUser(foundUser.data.data)
-                setLogged(true)
-            }
-            let response = { status: "" }
-            try {
-                response = await api.getReadingsByTask(foundUser.data.data._id, task)
-            } catch {
+        const interval = setInterval(getReadings, 2000);
+        return () => clearInterval(interval);
+    }, [intervalHelper]);
 
-            } finally {
-                if (response.status == 200) {
-                    setReadings(response.data.data)
-                }
-            }
-        }
-
+    useEffect(() => {
         if (didMount.current) {
-            getReadings()
+            setupUser()
             didMount.current = false
             return
         }
@@ -64,6 +48,38 @@ function TaskDetails() {
     
         return () => window.removeEventListener("resize", handleWindowResize)
     }, [])
+
+    const setupUser = async () => {
+        const loggedInUser = localStorage.getItem("user")
+        let foundUser
+        if (loggedInUser) {
+            const parsed = JSON.parse(loggedInUser)
+            foundUser = await api.getUserByEmail(parsed.email)
+            console.log(foundUser)
+            setUser(foundUser.data.data)
+            setLogged(true)
+            getReadings(foundUser.data.data._id)
+        }
+    }
+
+    const getReadings = async (id) => {
+        if (intervalHelper < 3)     
+            invokeIntervalHelper(intervalHelper+1)
+
+        let response = { status: "" }
+        try {
+            if (user._id != undefined)
+                response = await api.getReadingsByTask(user._id, task)
+            else
+                response = await api.getReadingsByTask(id, task)
+        } catch {
+
+        } finally {
+            if (response.status == 200) {
+                setReadings(response.data.data)
+            }
+        }
+    }
 
     const groupedBySensor = [...new Map(readings.map(reading => [reading["name"], reading])).values()]
     const firstLog = new Date(Math.min(...readings.map(r => new Date(r.createdAt))))
@@ -83,7 +99,7 @@ function TaskDetails() {
             rows.push(
                 <>
                     <motion.div
-                        initial = {{ y: "-40%", opacity: 0 }}
+                        initial = {{ y: intervalHelper < 3 ? "-40%" : "0%", opacity: intervalHelper < 3 ? 0 : 1 }}
                         animate = {{ y: "0%", opacity: !dismiss ? 1 : 0 }}
                         transition = {{ duration: 0.2, delay: !dismiss ? i : 0, type: "spring" }}>
                         { width > breakpoint ?

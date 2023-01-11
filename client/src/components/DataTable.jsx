@@ -270,28 +270,28 @@ const DataTable = (props) => {
     )
 }
 
-const DataTableRows = (rowsCount, showSecondLabel, showThirdLabel, timestamps, milliSeconds, sensorValue1, sensorValue2, sensorValue3, handleChangeInputTimestamp, handleChangeInputMilliseconds, handleChangeInputSensorValue1, handleChangeInputSensorValue2, handleChangeInputSensorValue3) => {
+const DataTableRows = (props) => {
     var rows = []
-    for (let i = 0; i < rowsCount.rowsCount; i++) {       
+    for (let i = 0; i < props.rowsCount; i++) {       
         rows.push(
             <tr>
                 <InputHead>
-                    <InputText id={`test-timestamp-${i}`} type="text" value={rowsCount.timestamps[i]} onChange={ function(e){ rowsCount.handleChangeInputTimestamp(e, i) } } className={styles.TableInput}/>
+                    <InputText id={`test-timestamp-${i}`} type="text" value={props.timestamps[i]} onChange={ function(e){ props.handleChangeInputTimestamp(e, i) } } className={styles.TableInput}/>
                 </InputHead>
                 <InputHead>
-                    <InputText id={`test-milliseconds-${i}`} type="text" value={rowsCount.milliSeconds[i]} onChange={ function(e){ rowsCount.handleChangeInputMilliseconds(e, i) } } className={styles.TableInput}/>
+                    <InputText id={`test-milliseconds-${i}`} type="text" value={props.milliSeconds[i]} onChange={ function(e){ props.handleChangeInputMilliseconds(e, i) } } className={styles.TableInput}/>
                 </InputHead>
                 <InputHead>
-                    <InputText id={`test-value1-${i}`} type="text" value={rowsCount.sensorValue1[i]} onChange={ function(e){ rowsCount.handleChangeInputSensorValue1(e, i) } } className={styles.TableInput}/>
+                    <InputText id={`test-value1-${i}`} type="text" value={props.sensorValue1[i]} onChange={ function(e){ props.handleChangeInputSensorValue1(e, i) } } className={styles.TableInput}/>
                 </InputHead>
-                { rowsCount.showSecondLabel? 
+                { props.showSecondLabel? 
                     <InputHead>
-                        <InputText type="text" value={rowsCount.sensorValue2[i]} onChange={ function(e){ rowsCount.handleChangeInputSensorValue2(e, i) } } className={styles.TableInput}/>
+                        <InputText type="text" value={props.sensorValue2[i]} onChange={ function(e){ props.handleChangeInputSensorValue2(e, i) } } className={styles.TableInput}/>
                     </InputHead>
                 : null}
-                { rowsCount.showThirdLabel? 
+                { props.showThirdLabel? 
                     <InputHead>
-                        <InputText type="text" value={rowsCount.sensorValue3[i]} onChange={ function(e){ rowsCount.handleChangeInputSensorValue3(e, i) } } className={styles.TableInput}/>
+                        <InputText type="text" value={props.sensorValue3[i]} onChange={ function(e){ props.handleChangeInputSensorValue3(e, i) } } className={styles.TableInput}/>
                     </InputHead>
                 : null}
             </tr>
@@ -301,28 +301,28 @@ const DataTableRows = (rowsCount, showSecondLabel, showThirdLabel, timestamps, m
     return rows;
 }
 
-const MobileDataTableRows = (rowsCount, showSecondLabel, showThirdLabel, timestamps, milliSeconds, sensorValue1, sensorValue2, sensorValue3, handleChangeInputTimestamp, handleChangeInputMilliseconds, handleChangeInputSensorValue1, handleChangeInputSensorValue2, handleChangeInputSensorValue3) => {
+const MobileDataTableRows = (props) => {
     var rows = []
-    for (let i = 0; i < rowsCount.rowsCount; i++) {
+    for (let i = 0; i < props.rowsCount; i++) {
         rows.push(
             <tr>
                 <MobileInputHead>
-                    <MobileInputText type="text" value={rowsCount.timestamps[i]} onChange={ function(e){ rowsCount.handleChangeInputTimestamp(e, i) } } className={styles.TableInput}/>
+                    <MobileInputText type="text" value={props.timestamps[i]} onChange={ function(e){ props.handleChangeInputTimestamp(e, i) } } className={styles.TableInput}/>
                 </MobileInputHead>
                 <MobileInputHead>
-                    <MobileInputText type="text" value={rowsCount.milliSeconds[i]} onChange={ function(e){ rowsCount.handleChangeInputMilliseconds(e, i) } } className={styles.TableInput}/>
+                    <MobileInputText type="text" value={props.milliSeconds[i]} onChange={ function(e){ props.handleChangeInputMilliseconds(e, i) } } className={styles.TableInput}/>
                 </MobileInputHead>
                 <MobileInputHead>
-                    <MobileInputText type="text" value={rowsCount.sensorValue1[i]} onChange={ function(e){ rowsCount.handleChangeInputSensorValue1(e, i) } } className={styles.TableInput}/>
+                    <MobileInputText type="text" value={props.sensorValue1[i]} onChange={ function(e){ props.handleChangeInputSensorValue1(e, i) } } className={styles.TableInput}/>
                 </MobileInputHead>
-                { rowsCount.showSecondLabel? 
+                { props.showSecondLabel? 
                     <MobileInputHead>
-                        <MobileInputText type="text" value={rowsCount.sensorValue2[i]} onChange={ function(e){ rowsCount.handleChangeInputSensorValue2(e, i) } } className={styles.TableInput}/>
+                        <MobileInputText type="text" value={props.sensorValue2[i]} onChange={ function(e){ props.handleChangeInputSensorValue2(e, i) } } className={styles.TableInput}/>
                     </MobileInputHead>
                 : null}
-                { rowsCount.showThirdLabel? 
+                { props.showThirdLabel? 
                     <MobileInputHead>
-                        <MobileInputText type="text" value={rowsCount.sensorValue3[i]} onChange={ function(e){ rowsCount.handleChangeInputSensorValue3(e, i) } } className={styles.TableInput}/>
+                        <MobileInputText type="text" value={props.sensorValue3[i]} onChange={ function(e){ props.handleChangeInputSensorValue3(e, i) } } className={styles.TableInput}/>
                     </MobileInputHead>
                 : null}
             </tr>
