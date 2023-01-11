@@ -14,5 +14,14 @@ If you don't want these features, you can use seeded account dedicated for e2e t
 **PASSWORD:** `Test`
 
 
-Screenshot:
-![alt text](https://i.imgur.com/PxVXJjS.png)
+Screenshots:
+![alt text](https://i.imgur.com/zyhUEM5.jpg) 
+
+
+![alt text](https://i.imgur.com/PxVXJjS.png) 
+
+
+![alt text](https://i.imgur.com/xlxWAsw.jpg)
+
+
+![alt text](https://i.imgur.com/D2Lect1.jpg)
