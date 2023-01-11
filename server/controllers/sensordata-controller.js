@@ -354,6 +354,17 @@ deleteReadingsByTask = async (req, res) => {
     }).catch(err => console.log(err))
 }
 
+deletes = async (req, res) => {
+    await SensorData.deleteMany({}, (err, reads) => {
+        if (err) {
+            return res.status(400)
+        }
+        return res
+        .status(200)
+        .json({ success: true, message: "deleted"})
+    })
+}
+
 module.exports = {
     createReading,
     getAllReadings,
@@ -370,4 +381,5 @@ module.exports = {
     shareTaskByName,
     getSharedTasks,
     deleteReadingsByTask,
+    deletes,
 }
