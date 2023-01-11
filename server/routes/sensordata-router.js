@@ -17,7 +17,7 @@ router.delete("/reading/:uuid", SensorDataController.deleteReading)
 router.delete("/reading/bundle/:bundleId", SensorDataController.deleteReadingByBundleId)
 router.post("/file", SensorDataController.downloadFile)
 router.get("/file/:filename", SensorDataController.readFile)
-router.delete("/allreadings", SensorDataController.deletes)
+//router.delete("/allreadings", SensorDataController.deletes)
 
 // TASKS
 router.post("/stream", SensorDataController.streamDataToDb)
